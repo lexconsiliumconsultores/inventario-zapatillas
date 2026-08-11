@@ -1,13 +1,13 @@
-const CACHE = 'inventario-v1';
+const CACHE = 'inventario-v2';
 const ESTATICOS = [
   '/',
   '/index.html',
   '/estilos.css',
   '/app.js',
   '/manifest.json',
-  '/icono-192.png',
-  '/icono-512.png',
-  '/icono-maskable-512.png',
+  '/logo-velvet-192.png',
+  '/logo-velvet.png',
+  '/logo-maskable-512.png',
 ];
 
 self.addEventListener('install', (e) => {
