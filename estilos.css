@@ -94,6 +94,17 @@ main {
   flex-wrap: wrap;
 }
 
+.sync-estado {
+  font-size: 12px;
+  color: #64748b;
+  margin-left: auto;
+}
+
+.sync-estado.on {
+  color: #22c55e;
+  font-weight: 600;
+}
+
 .toolbar input {
   flex: 1;
   min-width: 200px;
