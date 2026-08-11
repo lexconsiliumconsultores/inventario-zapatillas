@@ -31,8 +31,9 @@ async function cargar() {
 async function cargarSistema() {
   const res = await fetch('/api/system');
   const data = await res.json();
-  const nombre = data.excel ? data.excel.split('\\').pop().split('/').pop() : 'sin datos';
-  origExcel.textContent = 'Fuente: ' + nombre;
+  const nombre = data.excel ? data.excel.split('\\').pop().split('/').pop() : '';
+  origExcel.textContent = nombre ? 'Fuente: ' + nombre : '';
+  origExcel.style.display = nombre ? 'block' : 'none';
   return data;
 }
 

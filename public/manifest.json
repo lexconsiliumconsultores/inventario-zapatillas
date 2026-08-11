@@ -1,29 +1,29 @@
 {
-  "name": "Inventario de Zapatillas",
-  "short_name": "Inventario",
-  "description": "Control de inventario de zapatillas: stock, tallas, ventas y fotos.",
+  "name": "Velvet Store - Inventario",
+  "short_name": "Velvet",
+  "description": "Inventario Velvet Store: stock, tallas, ventas y fotos.",
   "lang": "es",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1e293b",
-  "theme_color": "#1e293b",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
   "icons": [
     {
-      "src": "/icono-192.png",
+      "src": "/logo-velvet-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icono-512.png",
+      "src": "/logo-velvet.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icono-maskable-512.png",
+      "src": "/logo-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

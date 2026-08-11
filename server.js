@@ -198,7 +198,7 @@ function crearServidor() {
     return servirArchivo(res, path.join(__dirname, 'public', 'app.js'), 'application/javascript; charset=utf-8');
   }
 
-  if (req.method === 'GET' && ['/manifest.json', '/sw.js', '/icono-192.png', '/icono-512.png', '/icono-maskable-512.png'].includes(url.pathname)) {
+  if (req.method === 'GET' && ['/manifest.json', '/sw.js', '/logo-velvet.png', '/logo-velvet-192.png', '/logo-maskable-512.png'].includes(url.pathname)) {
     const tipos = { json: 'application/manifest+json; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png' };
     return servirArchivo(res, path.join(__dirname, 'public', url.pathname.slice(1)), tipos[path.extname(url.pathname).slice(1)] || 'application/octet-stream');
   }
