@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventario de Zapatillas</title>
+  <link rel="stylesheet" href="/estilos.css" />
+</head>
+<body>
+  <header>
+    <h1>Inventario de Zapatillas</h1>
+    <div class="totales" id="totales"></div>
+  </header>
+
+  <main>
+    <section class="panel-form">
+      <form id="form-item">
+        <h2 id="titulo-form">Agregar Zapatilla</h2>
+        <label>
+          Codigo
+          <input type="text" id="codigo" placeholder="Ej: NIKE-AIR1" required />
+        </label>
+        <label>
+          Color
+          <input type="text" id="color" placeholder="Ej: Rojo / Negro" required />
+        </label>
+        <label>
+          Talla
+          <select id="talla" required>
+            <option value="">Selecciona talla</option>
+            <option>35</option>
+            <option>36</option>
+            <option>37</option>
+            <option>38</option>
+            <option>39</option>
+            <option>40</option>
+            <option>41</option>
+            <option>42</option>
+            <option>43</option>
+            <option>44</option>
+            <option>45</option>
+            <option>46</option>
+          </select>
+        </label>
+        <label>
+          Cantidad
+          <div class="cantidad-widget">
+            <button type="button" id="menos" aria-label="Menos">-</button>
+            <input type="number" id="cantidad" min="0" value="1" />
+            <button type="button" id="mas" aria-label="Mas">+</button>
+          </div>
+        </label>
+        <input type="hidden" id="editando-id" />
+        <div class="acciones">
+          <button type="submit" id="btn-guardar">Agregar</button>
+          <button type="button" id="btn-cancelar" hidden>Cancelar</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel-lista">
+      <div class="barra-busqueda">
+        <input type="text" id="busqueda" placeholder="Buscar por codigo, color o talla..." />
+        <select id="filtro-talla">
+          <option value="">Todas las tallas</option>
+          <option>35</option>
+          <option>36</option>
+          <option>37</option>
+          <option>38</option>
+          <option>39</option>
+          <option>40</option>
+          <option>41</option>
+          <option>42</option>
+          <option>43</option>
+          <option>44</option>
+          <option>45</option>
+          <option>46</option>
+        </select>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Codigo</th>
+            <th>Color</th>
+            <th>Talla</th>
+            <th>Cantidad</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla"></tbody>
+      </table>
+      <p id="vacio" class="vacio">No hay zapatillas registradas.</p>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

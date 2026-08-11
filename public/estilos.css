@@ -1,0 +1,275 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f1f5f9;
+  color: #1e293b;
+  min-height: 100vh;
+}
+
+header {
+  background: #0f172a;
+  color: #fff;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+header h1 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.totales {
+  display: flex;
+  gap: 16px;
+}
+
+.totales .grupo {
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 6px 14px;
+  text-align: center;
+}
+
+.totales .grupo b {
+  display: block;
+  font-size: 18px;
+  color: #38bdf8;
+}
+
+.totales .grupo span {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.panel-form,
+.panel-lista {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  padding: 20px;
+}
+
+.panel-form h2 {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: #0f172a;
+}
+
+.panel-form label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 12px;
+}
+
+.panel-form input,
+.panel-form select {
+  width: 100%;
+  padding: 9px 10px;
+  margin-top: 5px;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.panel-form input:focus,
+.panel-form select:focus {
+  outline: 2px solid #38bdf8;
+  border-color: #38bdf8;
+}
+
+.cantidad-widget {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.cantidad-widget button {
+  width: 38px;
+  height: 38px;
+  font-size: 18px;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #e2e8f0;
+  cursor: pointer;
+}
+
+.cantidad-widget button:hover {
+  background: #cbd5e1;
+}
+
+.cantidad-widget input {
+  margin-top: 0;
+  text-align: center;
+  flex: 1;
+}
+
+.acciones {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.acciones button {
+  flex: 1;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#btn-guardar {
+  background: #0ea5e9;
+  color: #fff;
+}
+
+#btn-guardar:hover {
+  background: #0284c7;
+}
+
+#btn-cancelar {
+  background: #64748b;
+  color: #fff;
+}
+
+.barra-busqueda {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.barra-busqueda input {
+  flex: 1;
+  min-width: 200px;
+  padding: 9px 10px;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.barra-busqueda select {
+  padding: 9px 10px;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  padding: 10px 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+
+tbody tr:hover {
+  background: #f8fafc;
+}
+
+.badge-color {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.badge-cantidad {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.badge-cantidad.baja {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.badge-cantidad.ok {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.btn-editar,
+.btn-eliminar {
+  padding: 5px 12px;
+  font-size: 13px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-editar {
+  background: #e2e8f0;
+  color: #1e293b;
+  margin-right: 6px;
+}
+
+.btn-editar:hover {
+  background: #cbd5e1;
+}
+
+.btn-eliminar {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.btn-eliminar:hover {
+  background: #fecaca;
+}
+
+.vacio {
+  text-align: center;
+  color: #94a3b8;
+  padding: 30px 0;
+  font-size: 14px;
+}
+
+@media (max-width: 800px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "inventario-zapatillas",
+  "version": "1.0.0",
+  "description": "Control de inventario de zapatillas",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
