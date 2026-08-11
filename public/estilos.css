@@ -14,7 +14,7 @@ body {
 header {
   background: #0f172a;
   color: #fff;
-  padding: 20px 24px;
+  padding: 18px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -27,9 +27,15 @@ header h1 {
   font-weight: 700;
 }
 
+.subtitulo {
+  font-size: 12px;
+  color: #94a3b8;
+  word-break: break-all;
+}
+
 .totales {
   display: flex;
-  gap: 16px;
+  gap: 12px;
 }
 
 .totales .grupo {
@@ -51,201 +57,200 @@ header h1 {
 }
 
 main {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 20px;
-  padding: 20px;
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
-}
-
-.panel-form,
-.panel-lista {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
   padding: 20px;
 }
 
-.panel-form h2 {
-  font-size: 16px;
-  margin-bottom: 16px;
-  color: #0f172a;
-}
-
-.panel-form label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: #334155;
-  margin-bottom: 12px;
-}
-
-.panel-form input,
-.panel-form select {
-  width: 100%;
-  padding: 9px 10px;
-  margin-top: 5px;
-  font-size: 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #f8fafc;
-}
-
-.panel-form input:focus,
-.panel-form select:focus {
-  outline: 2px solid #38bdf8;
-  border-color: #38bdf8;
-}
-
-.cantidad-widget {
+.toolbar {
   display: flex;
+  gap: 10px;
   align-items: center;
-  gap: 6px;
-  margin-top: 5px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
 }
 
-.cantidad-widget button {
-  width: 38px;
-  height: 38px;
-  font-size: 18px;
-  font-weight: 700;
+.toolbar input {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 12px;
+  font-size: 14px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  background: #e2e8f0;
-  cursor: pointer;
+  background: #fff;
 }
 
-.cantidad-widget button:hover {
-  background: #cbd5e1;
-}
-
-.cantidad-widget input {
-  margin-top: 0;
-  text-align: center;
-  flex: 1;
-}
-
-.acciones {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.acciones button {
-  flex: 1;
-  padding: 11px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-#btn-guardar {
+.btn-primario {
   background: #0ea5e9;
   color: #fff;
+  border: none;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-#btn-guardar:hover {
+.btn-primario:hover {
   background: #0284c7;
 }
 
-#btn-cancelar {
-  background: #64748b;
-  color: #fff;
+.btn-secundario {
+  background: #e2e8f0;
+  color: #1e293b;
+  border: none;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.barra-busqueda {
+.btn-secundario:hover {
+  background: #cbd5e1;
+}
+
+.chico {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.tabs {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
 
-.barra-busqueda input {
-  flex: 1;
-  min-width: 200px;
-  padding: 9px 10px;
+.tabs button {
+  padding: 8px 18px;
   font-size: 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #f8fafc;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #334155;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
 }
 
-.barra-busqueda select {
-  padding: 9px 10px;
-  font-size: 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #f8fafc;
+.tabs button.activo {
+  background: #0f172a;
+  color: #fff;
+}
+
+.panel-lista {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  overflow-x: auto;
+  padding: 8px 0;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 900px;
 }
 
 th {
   text-align: left;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #64748b;
-  padding: 10px 8px;
+  padding: 10px 12px;
   border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
 }
 
 td {
-  padding: 10px 8px;
+  padding: 10px 12px;
   border-bottom: 1px solid #f1f5f9;
   font-size: 14px;
+  vertical-align: top;
 }
 
 tbody tr:hover {
   background: #f8fafc;
 }
 
-.badge-color {
+.badge-temporada {
   display: inline-block;
-  padding: 3px 10px;
+  padding: 2px 8px;
   border-radius: 999px;
-  background: #e0f2fe;
-  color: #0369a1;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.badge-cantidad {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 6px;
+  font-size: 11px;
   font-weight: 700;
+  background: #e0e7ff;
+  color: #4338ca;
 }
 
-.badge-cantidad.baja {
+.chip-talla {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #dcfce7;
+  color: #15803d;
+  margin: 2px;
+}
+
+.chip-talla.baja {
   background: #fee2e2;
   color: #b91c1c;
 }
 
-.badge-cantidad.ok {
+.chip-talla.cero {
+  background: #e2e8f0;
+  color: #64748b;
+}
+
+.total-stock {
+  font-weight: 700;
+}
+
+.total-stock.baja {
+  color: #b91c1c;
+}
+
+.acciones-celda {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.mini {
+  padding: 5px 9px;
+  font-size: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-vender {
   background: #dcfce7;
   color: #15803d;
 }
 
-.btn-editar,
-.btn-eliminar {
-  padding: 5px 12px;
-  font-size: 13px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+.btn-vender:hover {
+  background: #bbf7d0;
+}
+
+.btn-alta {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.btn-alta:hover {
+  background: #bfdbfe;
 }
 
 .btn-editar {
   background: #e2e8f0;
   color: #1e293b;
-  margin-right: 6px;
 }
 
 .btn-editar:hover {
@@ -268,8 +273,169 @@ tbody tr:hover {
   font-size: 14px;
 }
 
+/* Modales */
+.fondo[hidden] {
+  display: none !important;
+}
+
+.fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.modal-caja {
+  background: #fff;
+  border-radius: 12px;
+  padding: 22px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-caja h2 {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: #0f172a;
+}
+
+.modal-caja label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 12px;
+}
+
+.modal-caja input,
+.modal-caja select {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 5px;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.fila-talla {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.fila-talla input {
+  margin-top: 0;
+}
+
+.fila-talla .quitar {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #fecaca;
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.acciones {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.acciones button {
+  flex: 1;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-cancelar {
+  background: #64748b;
+  color: #fff;
+}
+
+.sin-foto {
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  display: block;
+}
+
+.foto-contenedor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.label-foto {
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  background: #f8fafc;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.label-foto:hover {
+  border-color: #38bdf8;
+  color: #0ea5e9;
+}
+
+.preview-foto {
+  display: none;
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.aviso {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.aviso.error {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.aviso.ok {
+  background: #dcfce7;
+  color: #15803d;
+}
+
 @media (max-width: 800px) {
   main {
-    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+  header h1 {
+    font-size: 18px;
   }
 }

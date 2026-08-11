@@ -1,159 +1,377 @@
-const form = document.getElementById('form-item');
 const tbody = document.getElementById('tabla');
 const vacio = document.getElementById('vacio');
 const busqueda = document.getElementById('busqueda');
-const filtroTalla = document.getElementById('filtro-talla');
-const editandoId = document.getElementById('editando-id');
-const tituloForm = document.getElementById('titulo-form');
-const btnGuardar = document.getElementById('btn-guardar');
-const btnCancelar = document.getElementById('btn-cancelar');
+const tabs = document.getElementById('tabs');
 const totales = document.getElementById('totales');
+const origExcel = document.getElementById('orig-excel');
+
+const formItem = document.getElementById('form-item');
+const formVenta = document.getElementById('form-venta');
+const formAlta = document.getElementById('form-alta');
+const modalForm = document.getElementById('modal-form');
+const modalVenta = document.getElementById('modal-venta');
+const modalAlta = document.getElementById('modal-alta');
 
 let inventario = [];
+let temporada = '';
+let itemVenta = null;
+let itemAlta = null;
+let fotoPendiente = null;
+let quitarFoto = false;
 
 async function cargar() {
-  const res = await fetch('/api/inventario');
+  const params = new URLSearchParams();
+  if (temporada) params.set('temporada', temporada);
+  if (busqueda.value.trim()) params.set('q', busqueda.value.trim());
+  const res = await fetch('/api/inventario?' + params.toString());
   inventario = await res.json();
   pintar();
 }
 
+async function cargarSistema() {
+  const res = await fetch('/api/system');
+  const data = await res.json();
+  const nombre = data.excel ? data.excel.split('\\').pop().split('/').pop() : 'sin datos';
+  origExcel.textContent = 'Fuente: ' + nombre;
+  return data;
+}
+
+function formatearPrecio(n) {
+  return '$' + Number(n).toLocaleString('es-CL');
+}
+
 function pintar() {
-  const termino = busqueda.value.toLowerCase();
-  const talla = filtroTalla.value;
-
-  let filtrados = inventario;
-  if (termino) {
-    filtrados = filtrados.filter((i) =>
-      String(i.codigo).toLowerCase().includes(termino) ||
-      String(i.color).toLowerCase().includes(termino) ||
-      String(i.talla).toLowerCase().includes(termino)
-    );
-  }
-  if (talla) {
-    filtrados = filtrados.filter((i) => String(i.talla) === talla);
-  }
-
   tbody.innerHTML = '';
-  vacio.style.display = filtrados.length ? 'none' : 'block';
+  vacio.style.display = inventario.length ? 'none' : 'block';
+  let unidades = 0;
 
-  filtrados.forEach((item) => {
+  inventario.forEach((item) => {
+    unidades += item.tallas.reduce((s, t) => s + Number(t.stock) || 0, 0);
     const tr = document.createElement('tr');
-    const baja = item.cantidad <= 5;
+    const stockTotal = item.tallas.reduce((s, t) => s + (Number(t.stock) || 0), 0);
+
+    const chips = item.tallas
+      .map((t) => {
+        const s = Number(t.stock) || 0;
+        let clase = 'chip-talla ok';
+        if (s <= 2 && s > 0) clase = 'chip-talla baja';
+        if (s <= 0) clase = 'chip-talla cero';
+        return `<span class="${clase}">${t.talla} · ${s}</span>`;
+      })
+      .join('') || '<em>sin tallas</em>';
+
     tr.innerHTML = `
-      <td><b>${escapar(item.codigo)}</b></td>
-      <td><span class="badge-color">${escapar(item.color)}</span></td>
-      <td>${escapar(item.talla)}</td>
-      <td><span class="badge-cantidad ${baja ? 'baja' : 'ok'}">${item.cantidad}</span></td>
+      <td>${item.foto ? `<a href="${esc(item.foto)}" target="_blank"><img class="thumb" src="${esc(item.foto)}" alt="${esc(item.producto)}" /></a>` : '<span class="sin-foto">Sin foto</span>'}</td>
+      <td><b>${esc(item.codigo || '')}</b></td>
       <td>
-        <button class="btn-editar" data-id="${item.id}">Editar</button>
-        <button class="btn-eliminar" data-id="${item.id}">Eliminar</button>
+        <span class="badge-temporada">${esc(item.temporada)}</span><br>
+        <b>${esc(item.producto || '')}</b>
+      </td>
+      <td>${esc(item.categoria || '')}</td>
+      <td>${esc(item.genero || '')}</td>
+      <td>${formatearPrecio(item.precio || 0)}</td>
+      <td>${chips}</td>
+      <td class="total-stock ${stockTotal <= 2 ? 'baja' : ''}">${stockTotal}</td>
+      <td>
+        <div class="acciones-celda">
+          <button class="mini btn-vender" data-accion="venta" data-id="${item.id}">Vender</button>
+          <button class="mini btn-alta" data-accion="alta" data-id="${item.id}">Sumar</button>
+          <button class="mini btn-editar" data-accion="editar" data-id="${item.id}">Editar</button>
+          <button class="mini btn-eliminar" data-accion="eliminar" data-id="${item.id}">Eliminar</button>
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
 
-  pintarTotales();
+  pintarTotales(unidades);
 }
 
-function pintarTotales() {
-  const modelos = inventario.length;
-  const unidades = inventario.reduce((suma, i) => suma + Number(i.cantidad || 0), 0);
-  const bajas = inventario.filter((i) => i.cantidad <= 5).length;
+async function pintarTotales(unidades) {
+  const sistema = await cargarSistema();
+  const modelos = sistema.totales.productos;
   totales.innerHTML = `
     <div class="grupo"><b>${modelos}</b><span>Modelos</span></div>
-    <div class="grupo"><b>${unidades}</b><span>Unidades</span></div>
-    <div class="grupo"><b>${bajas}</b><span>Stock bajo</span></div>
+    <div class="grupo"><b>${unidades}</b><span>En pantalla</span></div>
   `;
 }
 
-function escapar(texto) {
+function esc(texto) {
   const div = document.createElement('div');
   div.textContent = texto;
   return div.innerHTML;
 }
 
-function limpiarForm() {
-  form.reset();
-  document.getElementById('cantidad').value = '1';
-  editandoId.value = '';
-  tituloForm.textContent = 'Agregar Zapatilla';
-  btnGuardar.textContent = 'Agregar';
-  btnCancelar.hidden = true;
-  document.getElementById('codigo').focus();
+function abrirModal(modal) {
+  modal.hidden = false;
 }
 
-async function guardar() {
-  const item = {
-    codigo: document.getElementById('codigo').value.trim(),
-    color: document.getElementById('color').value.trim(),
-    talla: document.getElementById('talla').value,
-    cantidad: parseInt(document.getElementById('cantidad').value, 10) || 0,
-  };
+function cerrarModales() {
+  modalForm.hidden = true;
+  modalVenta.hidden = true;
+  modalAlta.hidden = true;
+}
 
-  const id = editandoId.value;
-  if (id) {
-    await fetch(`/api/inventario/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(item),
-    });
-  } else {
-    await fetch('/api/inventario', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(item),
-    });
+document.addEventListener('click', (e) => {
+  const datos = e.target.closest('[data-cerrar]');
+  if (datos) {
+    e.preventDefault();
+    cerrarModales();
   }
-  limpiarForm();
-  cargar();
-}
-
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  guardar();
 });
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') cerrarModales();
+});
+
+tabs.addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  document.querySelectorAll('#tabs button').forEach((b) => b.classList.remove('activo'));
+  btn.classList.add('activo');
+  temporada = btn.dataset.temporada;
+  cargar();
+});
+
+busqueda.addEventListener('input', cargar);
 
 tbody.addEventListener('click', async (e) => {
   const btn = e.target.closest('button');
   if (!btn) return;
   const id = Number(btn.dataset.id);
 
-  if (btn.classList.contains('btn-eliminar')) {
-    if (!confirm('¿Eliminar esta zapatilla del inventario?')) return;
+  if (btn.dataset.accion === 'eliminar') {
+    const item = inventario.find((i) => i.id === id);
+    if (!confirm(`¿Eliminar "${item.producto}" del inventario?`)) return;
     await fetch(`/api/inventario/${id}`, { method: 'DELETE' });
     cargar();
     return;
   }
 
-  if (btn.classList.contains('btn-editar')) {
+  if (btn.dataset.accion === 'venta') {
+    itemVenta = inventario.find((i) => i.id === id);
+    if (!itemVenta || !itemVenta.tallas.length) {
+      alert('Este producto no tiene tallas registradas.');
+      return;
+    }
+    const sel = document.getElementById('venta-talla');
+    sel.innerHTML = itemVenta.tallas
+      .map((t) => `<option value="${esc(t.talla)}">Talla ${esc(t.talla)} · stock ${t.stock}</option>`)
+      .join('');
+    document.getElementById('venta-cantidad').value = '1';
+    document.getElementById('titulo-venta').textContent = `Vender · ${itemVenta.codigo} ${itemVenta.producto}`;
+    abrirModal(modalVenta);
+    return;
+  }
+
+  if (btn.dataset.accion === 'alta') {
+    itemAlta = inventario.find((i) => i.id === id);
+    if (!itemAlta) return;
+    document.getElementById('alta-talla').value = '';
+    document.getElementById('alta-cantidad').value = '1';
+    abrirModal(modalAlta);
+    return;
+  }
+
+  if (btn.dataset.accion === 'editar') {
     const item = inventario.find((i) => i.id === id);
     if (!item) return;
-    editandoId.value = item.id;
+    document.getElementById('editando-id').value = item.id;
+    document.getElementById('temporada').value = item.temporada;
     document.getElementById('codigo').value = item.codigo;
-    document.getElementById('color').value = item.color;
-    document.getElementById('talla').value = item.talla;
-    document.getElementById('cantidad').value = item.cantidad;
-    tituloForm.textContent = 'Editar Zapatilla';
-    btnGuardar.textContent = 'Actualizar';
-    btnCancelar.hidden = false;
-    document.getElementById('codigo').focus();
+    document.getElementById('producto').value = item.producto;
+    document.getElementById('categoria').value = item.categoria || '';
+    document.getElementById('genero').value = item.genero || '';
+    document.getElementById('precio').value = item.precio || 0;
+    document.getElementById('titulo-form').textContent = 'Editar Producto';
+    fotoPendiente = null;
+    quitarFoto = false;
+    mostrarFotoActual(item.foto);
+    abrirModal(modalForm);
     return;
   }
 });
 
-btnCancelar.addEventListener('click', limpiarForm);
-
-document.getElementById('mas').addEventListener('click', () => {
-  const input = document.getElementById('cantidad');
-  input.value = (parseInt(input.value, 10) || 0) + 1;
+document.getElementById('foto').addEventListener('change', (e) => {
+  const archivo = e.target.files[0];
+  if (!archivo) return;
+  const lector = new FileReader();
+  lector.onload = () => {
+    fotoPendiente = lector.result;
+    quitarFoto = false;
+    mostrarFotoActual(fotoPendiente);
+  };
+  lector.readAsDataURL(archivo);
 });
 
-document.getElementById('menos').addEventListener('click', () => {
-  const input = document.getElementById('cantidad');
-  input.value = Math.max(0, (parseInt(input.value, 10) || 0) - 1);
+document.getElementById('btn-quitar-foto').addEventListener('click', () => {
+  fotoPendiente = null;
+  quitarFoto = true;
+  mostrarFotoActual(null);
 });
 
-busqueda.addEventListener('input', pintar);
-filtroTalla.addEventListener('change', pintar);
+function mostrarFotoActual(fuente) {
+  const preview = document.getElementById('preview-foto');
+  const texto = document.getElementById('texto-foto');
+  const boton = document.getElementById('btn-quitar-foto');
+  if (fuente) {
+    preview.src = fuente;
+    preview.style.display = 'block';
+    texto.style.display = 'none';
+    boton.hidden = false;
+  } else {
+    preview.removeAttribute('src');
+    preview.style.display = 'none';
+    texto.style.display = 'block';
+    boton.hidden = true;
+  }
+}
+
+async function guardarFotoSiAplica(id) {
+  if (fotoPendiente) {
+    await fetch(`/api/inventario/${id}/foto`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base64: fotoPendiente }),
+    });
+  } else if (quitarFoto) {
+    await fetch(`/api/inventario/${id}/foto`, { method: 'DELETE' });
+  }
+  fotoPendiente = null;
+  quitarFoto = false;
+}
+
+formItem.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('editando-id').value;
+  const payload = {
+    temporada: document.getElementById('temporada').value,
+    codigo: document.getElementById('codigo').value.trim(),
+    producto: document.getElementById('producto').value.trim(),
+    categoria: document.getElementById('categoria').value.trim() || 'General',
+    genero: document.getElementById('genero').value.trim() || 'Unisex',
+    precio: Number(document.getElementById('precio').value) || 0,
+  };
+
+  if (id) {
+    const res = await fetch(`/api/inventario/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const datos = await res.json();
+    if (datos.error) {
+      alert(datos.error);
+      return;
+    }
+    await guardarFotoSiAplica(id);
+    cerrarModales();
+    cargar();
+    return;
+  }
+
+  const filas = [...document.querySelectorAll('.fila-talla')];
+  payload.tallas = filas
+    .map((f) => ({
+      talla: f.querySelector('.t-talla').value.trim(),
+      stock: Number(f.querySelector('.t-stock').value) || 0,
+    }))
+    .filter((t) => t.talla);
+
+  const res = await fetch('/api/inventario', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+  await guardarFotoSiAplica(data.item.id);
+  cerrarModales();
+  cargar();
+});
+
+formVenta.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const res = await fetch(`/api/inventario/${itemVenta.id}/venta`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      talla: document.getElementById('venta-talla').value,
+      cantidad: Number(document.getElementById('venta-cantidad').value) || 1,
+    }),
+  });
+  const data = await res.json();
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+  cerrarModales();
+  cargar();
+});
+
+formAlta.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const res = await fetch(`/api/inventario/${itemAlta.id}/alta`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      talla: document.getElementById('alta-talla').value,
+      cantidad: Number(document.getElementById('alta-cantidad').value) || 0,
+    }),
+  });
+  const data = await res.json();
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+  cerrarModales();
+  cargar();
+});
+
+document.getElementById('btn-nuevo').addEventListener('click', () => {
+  formItem.reset();
+  document.getElementById('editando-id').value = '';
+  document.getElementById('precio').value = '0';
+  document.getElementById('titulo-form').textContent = 'Nuevo Producto';
+  document.getElementById('tallas-iniciales').innerHTML = '';
+  agregarFilaTalla();
+  fotoPendiente = null;
+  quitarFoto = false;
+  document.getElementById('foto').value = '';
+  mostrarFotoActual(null);
+  abrirModal(modalForm);
+  document.getElementById('producto').focus();
+});
+
+document.getElementById('btn-agregar-talla').addEventListener('click', agregarFilaTalla);
+
+function agregarFilaTalla() {
+  const contenedor = document.getElementById('tallas-iniciales');
+  const fila = document.createElement('div');
+  fila.className = 'fila-talla';
+  fila.innerHTML = `
+    <input type="number" class="t-talla" placeholder="Talla" min="1" />
+    <input type="number" class="t-stock" placeholder="Stock" min="0" value="1" />
+    <button type="button" class="quitar">x</button>
+  `;
+  fila.querySelector('.quitar').addEventListener('click', () => fila.remove());
+  contenedor.appendChild(fila);
+}
+
+document.getElementById('btn-recargar').addEventListener('click', async () => {
+  if (!confirm('Esto reemplaza todo el inventario actual con los datos del Excel. ¿Continuar?')) return;
+  const res = await fetch('/api/reload', { method: 'POST' });
+  const data = await res.json();
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+  alert('Inventario recargado desde el Excel.');
+  cargar();
+});
 
 cargar();
+cargarSistema();

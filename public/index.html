@@ -8,90 +8,144 @@
 </head>
 <body>
   <header>
-    <h1>Inventario de Zapatillas</h1>
+    <div>
+      <h1>Inventario de Zapatillas</h1>
+      <span class="subtitulo" id="orig-excel"></span>
+    </div>
     <div class="totales" id="totales"></div>
   </header>
 
   <main>
-    <section class="panel-form">
-      <form id="form-item">
-        <h2 id="titulo-form">Agregar Zapatilla</h2>
-        <label>
-          Codigo
-          <input type="text" id="codigo" placeholder="Ej: NIKE-AIR1" required />
-        </label>
-        <label>
-          Color
-          <input type="text" id="color" placeholder="Ej: Rojo / Negro" required />
-        </label>
-        <label>
-          Talla
-          <select id="talla" required>
-            <option value="">Selecciona talla</option>
-            <option>35</option>
-            <option>36</option>
-            <option>37</option>
-            <option>38</option>
-            <option>39</option>
-            <option>40</option>
-            <option>41</option>
-            <option>42</option>
-            <option>43</option>
-            <option>44</option>
-            <option>45</option>
-            <option>46</option>
-          </select>
-        </label>
-        <label>
-          Cantidad
-          <div class="cantidad-widget">
-            <button type="button" id="menos" aria-label="Menos">-</button>
-            <input type="number" id="cantidad" min="0" value="1" />
-            <button type="button" id="mas" aria-label="Mas">+</button>
-          </div>
-        </label>
-        <input type="hidden" id="editando-id" />
-        <div class="acciones">
-          <button type="submit" id="btn-guardar">Agregar</button>
-          <button type="button" id="btn-cancelar" hidden>Cancelar</button>
-        </div>
-      </form>
+    <section class="toolbar">
+      <button id="btn-nuevo" class="btn-primario">+ Nuevo Producto</button>
+      <button id="btn-recargar" class="btn-secundario">Recargar desde Excel</button>
+      <input type="text" id="busqueda" placeholder="Buscar por codigo o producto..." />
     </section>
 
+    <nav class="tabs" id="tabs">
+      <button data-temporada="" class="activo">Todos</button>
+      <button data-temporada="Verano">Verano</button>
+      <button data-temporada="Invierno">Invierno</button>
+      <button data-temporada="Niños">Niños</button>
+    </nav>
+
     <section class="panel-lista">
-      <div class="barra-busqueda">
-        <input type="text" id="busqueda" placeholder="Buscar por codigo, color o talla..." />
-        <select id="filtro-talla">
-          <option value="">Todas las tallas</option>
-          <option>35</option>
-          <option>36</option>
-          <option>37</option>
-          <option>38</option>
-          <option>39</option>
-          <option>40</option>
-          <option>41</option>
-          <option>42</option>
-          <option>43</option>
-          <option>44</option>
-          <option>45</option>
-          <option>46</option>
-        </select>
-      </div>
       <table>
         <thead>
           <tr>
+            <th>Foto</th>
             <th>Codigo</th>
-            <th>Color</th>
-            <th>Talla</th>
-            <th>Cantidad</th>
+            <th>Producto</th>
+            <th>Categoria</th>
+            <th>Genero</th>
+            <th>Precio</th>
+            <th>Tallas / Stock</th>
+            <th>Total</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody id="tabla"></tbody>
       </table>
-      <p id="vacio" class="vacio">No hay zapatillas registradas.</p>
+      <p id="vacio" class="vacio">No hay productos en esta vista.</p>
     </section>
   </main>
+
+  <div class="modal fondo" id="modal-form" hidden>
+    <div class="modal-caja">
+      <h2 id="titulo-form">Nuevo Producto</h2>
+      <form id="form-item">
+        <input type="hidden" id="editando-id" />
+        <label>
+          Temporada
+          <select id="temporada" required>
+            <option value="Verano">Verano</option>
+            <option value="Invierno">Invierno</option>
+            <option value="Niños">Niños</option>
+          </select>
+        </label>
+        <label>
+          Codigo
+          <input type="text" id="codigo" placeholder="Ej: Z-01" />
+        </label>
+        <label>
+          Producto
+          <input type="text" id="producto" placeholder="Ej: Zapatillas Lona Tipo Vans" required />
+        </label>
+        <label>
+          Categoria
+          <input type="text" id="categoria" placeholder="Ej: Zapatillas" />
+        </label>
+        <label>
+          Genero
+          <input type="text" id="genero" placeholder="Ej: Mujer / Hombre / Niña" />
+        </label>
+        <label>
+          Precio ($)
+          <input type="number" id="precio" min="0" value="0" />
+        </label>
+        <label>
+          Foto del producto
+          <div class="foto-contenedor">
+            <label class="label-foto" for="foto">
+              <img id="preview-foto" class="preview-foto" alt="Vista previa" />
+              <span id="texto-foto">Elegir imagen</span>
+            </label>
+            <input type="file" id="foto" accept="image/*" hidden />
+            <button type="button" id="btn-quitar-foto" class="btn-secundario chico" hidden>Quitar foto</button>
+          </div>
+        </label>
+
+        <label>Tallas / Stock inicial</label>
+        <div id="tallas-iniciales"></div>
+        <button type="button" id="btn-agregar-talla" class="btn-secundario chico">+ Agregar talla</button>
+
+        <div class="acciones">
+          <button type="submit" id="btn-guardar" class="btn-primario">Guardar</button>
+          <button type="button" class="btn-cancelar" data-cerrar="modal-form">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fondo" id="modal-venta" hidden>
+    <div class="modal-caja">
+      <h2 id="titulo-venta">Registrar Venta</h2>
+      <form id="form-venta">
+        <label>
+          Talla
+          <select id="venta-talla" required></select>
+        </label>
+        <label>
+          Cantidad
+          <input type="number" id="venta-cantidad" min="1" value="1" required />
+        </label>
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Vender</button>
+          <button type="button" class="btn-cancelar" data-cerrar="modal-venta">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fondo" id="modal-alta" hidden>
+    <div class="modal-caja">
+      <h2>Sumar Stock</h2>
+      <form id="form-alta">
+        <label>
+          Talla
+          <input type="number" id="alta-talla" min="1" required />
+        </label>
+        <label>
+          Cantidad a sumar
+          <input type="number" id="alta-cantidad" min="1" value="1" required />
+        </label>
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Sumar</button>
+          <button type="button" class="btn-cancelar" data-cerrar="modal-alta">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="/app.js"></script>
 </body>
