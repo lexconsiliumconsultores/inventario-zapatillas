@@ -1,3 +1,4 @@
 node_modules/
 inventario.json
 *.log
+dist/

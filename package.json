@@ -2,14 +2,59 @@
   "name": "inventario-zapatillas",
   "version": "1.0.0",
   "description": "Control de inventario de zapatillas",
-  "main": "server.js",
+  "main": "electron/main.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "electron": "electron .",
+    "iconos": "node scripts/generar-iconos.js",
+    "dist": "electron-builder --win",
+    "dist:win": "electron-builder --win",
+    "dist:portable": "electron-builder --win portable"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^43.3.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.inventario.zapatillas",
+    "productName": "Inventario Zapatillas",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "server.js",
+      "excel.js",
+      "inspect.js",
+      "public/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Inventario Zapatillas"
+    },
+    "icon": "build/icon.png"
   }
 }

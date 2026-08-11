@@ -89,7 +89,8 @@ function limpiarFotoProd(prod) {
   fs.rmSync(path.join(UPLOAD_DIR, nombre), { force: true });
 }
 
-const server = http.createServer(async (req, res) => {
+function crearServidor() {
+  return http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
   if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html')) {
@@ -102,6 +103,11 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'GET' && url.pathname === '/app.js') {
     return servirArchivo(res, path.join(__dirname, 'public', 'app.js'), 'application/javascript; charset=utf-8');
+  }
+
+  if (req.method === 'GET' && ['/manifest.json', '/sw.js', '/icono-192.png', '/icono-512.png', '/icono-maskable-512.png'].includes(url.pathname)) {
+    const tipos = { json: 'application/manifest+json; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png' };
+    return servirArchivo(res, path.join(__dirname, 'public', url.pathname.slice(1)), tipos[path.extname(url.pathname).slice(1)] || 'application/octet-stream');
   }
 
   if (req.method === 'GET' && url.pathname.startsWith('/uploads/')) {
@@ -282,8 +288,20 @@ const server = http.createServer(async (req, res) => {
 
   res.writeHead(404);
   res.end('Ruta no encontrada');
-});
+  });
+}
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Inventario corriendo en el puerto ${PORT}`);
-});
+function iniciar(puerto = process.env.PORT || 3000) {
+  const server = crearServidor();
+  return new Promise((resolve) => {
+    server.listen(puerto, () => resolve(server));
+  });
+}
+
+if (require.main === module) {
+  iniciar().then((server) => {
+    console.log(`Inventario corriendo en el puerto ${server.address().port}`);
+  });
+}
+
+module.exports = { crearServidor, iniciar };
