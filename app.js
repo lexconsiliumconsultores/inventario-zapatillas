@@ -373,5 +373,33 @@ document.getElementById('btn-recargar').addEventListener('click', async () => {
   cargar();
 });
 
+document.getElementById('btn-subir-excel').addEventListener('click', () => {
+  document.getElementById('archivo-excel').click();
+});
+
+document.getElementById('archivo-excel').addEventListener('change', async (e) => {
+  const archivo = e.target.files[0];
+  e.target.value = '';
+  if (!archivo) return;
+  if (!confirm(`Se cargará el inventario desde "${archivo.name}". ¿Continuar?`)) return;
+  const lector = new FileReader();
+  lector.onload = async () => {
+    const res = await fetch('/api/excel/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base64: lector.result.split(',')[1] }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    alert(`Inventario cargado desde "${archivo.name}" (${data.inventario.length} productos).`);
+    cargar();
+    cargarSistema();
+  };
+  lector.readAsDataURL(archivo);
+});
+
 cargar();
 cargarSistema();
