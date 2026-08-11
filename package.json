@@ -2,7 +2,7 @@
   "name": "inventario-zapatillas",
   "version": "1.0.0",
   "description": "Control de inventario de zapatillas",
-  "main": "electron/main.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "electron": "electron .",
@@ -24,6 +24,9 @@
   "build": {
     "appId": "com.inventario.zapatillas",
     "productName": "Inventario Zapatillas",
+    "extraMetadata": {
+      "main": "electron/main.js"
+    },
     "directories": {
       "output": "dist",
       "buildResources": "build"
