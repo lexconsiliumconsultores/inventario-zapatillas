@@ -20,6 +20,58 @@ try {
 }
 const DATA_FILE = path.join(DATA_DIR, 'inventario.json');
 
+const GH_REPO = process.env.GH_SYNC_REPO || '';
+const GH_TOKEN = process.env.GH_SYNC_TOKEN || '';
+const GH_RUTA = 'inventario.json';
+const GH_ACTIVO = Boolean(GH_REPO && GH_TOKEN);
+const GH_URL = GH_REPO ? `https://api.github.com/repos/${GH_REPO}/contents/${GH_RUTA}` : '';
+const CABECERA_GH = { Authorization: `Bearer ${GH_TOKEN}`, 'User-Agent': 'inventario-zapatillas', Accept: 'application/vnd.github+json' };
+
+async function leerGitHub() {
+  if (!GH_ACTIVO) return null;
+  const res = await fetch(GH_URL, { headers: CABECERA_GH });
+  if (!res.ok) {
+    if (res.status !== 404) console.error('Lectura GitHub fallo:', res.status);
+    return null;
+  }
+  const data = await res.json();
+  try {
+    return JSON.parse(Buffer.from(data.content, 'base64').toString('utf8'));
+  } catch (e) {
+    return null;
+  }
+}
+
+async function escribirGitHub(lista) {
+  if (!GH_ACTIVO) return;
+  let sha;
+  try {
+    const actual = await fetch(GH_URL, { headers: CABECERA_GH });
+    if (actual.status === 404) sha = undefined;
+    else if (!actual.ok) {
+      console.error('Sync: lectura previa', actual.status);
+      return;
+    } else sha = (await actual.json()).sha;
+    const body = { message: 'Actualizar inventario', content: Buffer.from(JSON.stringify(lista, null, 2)).toString('base64') };
+    if (sha) body.sha = sha;
+    const res = await fetch(GH_URL, {
+      method: 'PUT',
+      headers: { ...CABECERA_GH, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) console.error('Sync: escritura', res.status);
+  } catch (e) {
+    console.error('Sync GitHub:', e.message);
+  }
+}
+
+let colaSync = Promise.resolve();
+function sincronizarGitHub() {
+  const copia = JSON.parse(JSON.stringify(inventario));
+  colaSync = colaSync.then(() => escribirGitHub(copia)).catch((e) => console.error('Sync GitHub:', e.message));
+  return colaSync;
+}
+
 let inventario = [];
 
 function cargarJSON() {
@@ -34,6 +86,7 @@ function cargarJSON() {
 
 function guardar() {
   fs.writeFileSync(DATA_FILE, JSON.stringify(inventario, null, 2));
+  sincronizarGitHub();
 }
 
 function semillarDesdeExcel() {
@@ -58,6 +111,19 @@ cargarJSON();
 if (!inventario.length) {
   const archivo = semillarDesdeExcel();
   if (archivo) console.log('Datos cargados desde:', archivo);
+}
+
+if (GH_ACTIVO) {
+  leerGitHub().then((datosNube) => {
+    if (datosNube && Array.isArray(datosNube) && datosNube.length) {
+      inventario = datosNube;
+      fs.writeFileSync(DATA_FILE, JSON.stringify(inventario, null, 2));
+      console.log('Inventario cargado desde GitHub');
+    } else if (inventario.length) {
+      sincronizarGitHub();
+      console.log('GitHub vacio; inventario local subido a GitHub');
+    }
+  });
 }
 
 function leerCuerpo(req) {
