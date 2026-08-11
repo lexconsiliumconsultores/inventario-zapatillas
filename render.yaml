@@ -2,9 +2,15 @@ services:
   - type: web
     name: inventario-zapatillas
     runtime: node
-    buildCommand: npm install
+    buildCommand: npm install --omit=dev --no-audit --no-fund
     startCommand: npm start
-    healthCheckPath: /
+    healthCheckPath: /api/system
+    disk:
+      name: datos
+      mountPath: /data
+      sizeGB: 1
     envVars:
       - key: NODE_VERSION
         value: 20
+      - key: DATA_DIR
+        value: /data

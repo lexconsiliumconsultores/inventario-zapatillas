@@ -3,9 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const { cargarDesdeExcel, buscarArchivoExcel } = require('./excel');
 
-const DATA_FILE = path.join(__dirname, 'inventario.json');
-const UPLOAD_DIR = path.join(__dirname, 'uploads');
+const DATA_DIR = process.env.DATA_DIR || __dirname;
+const DATA_FILE = path.join(DATA_DIR, 'inventario.json');
+const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 const PORT = process.env.PORT || 3000;
+
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 let inventario = [];
 
