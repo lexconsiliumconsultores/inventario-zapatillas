@@ -7,6 +7,7 @@ if (typeof app === 'string' || typeof Menu === 'undefined') {
 }
 
 const path = require('path');
+process.env.DATA_DIR = path.join(app.getPath('userData'), 'datos');
 const { iniciar } = require(path.join(__dirname, '..', 'server.js'));
 const { autoUpdater } = require('electron-updater');
 
