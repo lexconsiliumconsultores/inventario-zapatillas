@@ -108,6 +108,7 @@ function semillarDesdeExcel() {
 }
 
 cargarJSON();
+migrarFotos();
 if (!inventario.length) {
   const archivo = semillarDesdeExcel();
   if (archivo) console.log('Datos cargados desde:', archivo);
@@ -162,10 +163,23 @@ function totalStock(tallas) {
   return (tallas || []).reduce((s, t) => s + (Number(t.stock) || 0), 0);
 }
 
-function limpiarFotoProd(prod) {
-  if (!prod || !prod.foto) return;
-  const nombre = path.basename(prod.foto);
-  fs.rmSync(path.join(UPLOAD_DIR, nombre), { force: true });
+function migrarFotos() {
+  let cambios = false;
+  const mime = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp' };
+  inventario.forEach((p) => {
+    if (p.foto && p.foto.startsWith('/uploads/') && !p.foto.startsWith('data:')) {
+      const ruta = path.join(UPLOAD_DIR, path.basename(p.foto));
+      if (fs.existsSync(ruta)) {
+        const tipo = mime[path.extname(ruta).toLowerCase()] || 'image/png';
+        p.foto = `data:${tipo};base64,` + fs.readFileSync(ruta).toString('base64');
+        cambios = true;
+      }
+    }
+  });
+  if (cambios) {
+    guardar();
+    console.log('Fotos convertidas al formato embebido');
+  }
 }
 
 function crearServidor() {
@@ -264,11 +278,7 @@ function crearServidor() {
       if (!m) return enviar(res, 400, { error: 'Imagen invalida' });
       const ext = m[1].toLowerCase() === 'jpeg' ? 'jpg' : m[1].toLowerCase();
       if (!['jpg', 'png', 'gif', 'webp'].includes(ext)) return enviar(res, 400, { error: 'Formato no soportado' });
-      limpiarFotoProd(prod);
-      const nombre = `foto-${id}.${ext}`;
-      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-      fs.writeFileSync(path.join(UPLOAD_DIR, nombre), Buffer.from(m[2], 'base64'));
-      prod.foto = `/uploads/${nombre}`;
+      prod.foto = b64;
       guardar();
       return enviar(res, 200, { ok: true, item: prod });
     } catch (e) {
@@ -280,7 +290,6 @@ function crearServidor() {
     const id = parseInt(url.pathname.split('/')[3], 10);
     const prod = inventario.find((i) => i.id === id);
     if (prod) {
-      limpiarFotoProd(prod);
       prod.foto = null;
       guardar();
     }
@@ -352,8 +361,6 @@ function crearServidor() {
 
   if (req.method === 'DELETE' && url.pathname.startsWith('/api/inventario/')) {
     const id = parseInt(url.pathname.split('/').pop(), 10);
-    const prod = inventario.find((i) => i.id === id);
-    if (prod) limpiarFotoProd(prod);
     inventario = inventario.filter((i) => i.id !== id);
     guardar();
     return enviar(res, 200, { ok: true, inventario });
@@ -363,6 +370,35 @@ function crearServidor() {
     const archivo = semillarDesdeExcel();
     if (!archivo) return enviar(res, 400, { error: 'No se encontro el Excel' });
     return enviar(res, 200, { ok: true, excel: archivo, inventario });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/excel/upload') {
+    try {
+      const item = await leerCuerpo(req);
+      const buffer = Buffer.from(String(item.base64 || ''), 'base64');
+      if (!buffer.length) return enviar(res, 400, { error: 'Falta el archivo Excel' });
+      const nombre = 'subido-excel' + Date.now() + '.xlsx';
+      const ruta = path.join(DATA_DIR, nombre);
+      fs.writeFileSync(ruta, buffer);
+      const productos = cargarDesdeExcel(ruta);
+      if (!productos.length) {
+        fs.rmSync(ruta, { force: true });
+        return enviar(res, 400, { error: 'El Excel no tiene datos validos (hojas: Verano, Invierno, Niños)' });
+      }
+      const fotosPrevias = {};
+      inventario.forEach((p) => {
+        if (p.foto) fotosPrevias[p.temporada + '||' + p.codigo + '||' + p.producto] = p.foto;
+      });
+      inventario = productos.map((p, i) => ({
+        id: i + 1,
+        ...p,
+        foto: fotosPrevias[p.temporada + '||' + p.codigo + '||' + p.producto] || null,
+      }));
+      guardar();
+      return enviar(res, 200, { ok: true, excel: nombre, inventario });
+    } catch (e) {
+      return enviar(res, 400, { error: 'No se pudo procesar el Excel' });
+    }
   }
 
   res.writeHead(404);
