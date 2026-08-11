@@ -404,3 +404,60 @@ document.getElementById('archivo-excel').addEventListener('change', async (e) =>
 
 cargar();
 cargarSistema();
+actualizarEstadoSync();
+
+const syncEstado = document.getElementById('sync-estado');
+const btnSync = document.getElementById('btn-sincronizar');
+
+async function actualizarEstadoSync() {
+  try {
+    const res = await fetch('/api/conexion');
+    const data = await res.json();
+    if (data.activo) {
+      syncEstado.textContent = data.viaEntorno ? 'Sincronizacion activa (web)' : 'Sincronizado con ' + (data.repo || 'GitHub');
+      syncEstado.className = 'sync-estado on';
+      btnSync.style.display = data.viaEntorno ? 'none' : 'inline-block';
+      btnSync.textContent = 'Desconectar';
+    } else {
+      syncEstado.textContent = '';
+      syncEstado.className = 'sync-estado';
+      btnSync.style.display = 'inline-block';
+      btnSync.textContent = 'Conectar sincronizacion';
+    }
+  } catch (e) {
+    syncEstado.textContent = 'Sin conexion al servidor';
+  }
+}
+
+btnSync.addEventListener('click', async () => {
+  let estado = { activo: false };
+  try {
+    estado = await (await fetch('/api/conexion')).json();
+  } catch (e) {}
+  if (estado.activo) {
+    if (!confirm('¿Desconectar la sincronizacion de GitHub?')) return;
+    const res = await fetch('/api/conexion', { method: 'DELETE' });
+    const data = await res.json();
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    actualizarEstadoSync();
+    return;
+  }
+  const token = prompt('Pega tu token de GitHub (empieza con github_pat_...):');
+  if (!token) return;
+  const res = await fetch('/api/conexion', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  });
+  const data = await res.json();
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+  alert(data.cargado ? 'Conectado. Inventario cargado desde GitHub.' : 'Conectado. Inventario local subido a GitHub.');
+  actualizarEstadoSync();
+  cargar();
+});

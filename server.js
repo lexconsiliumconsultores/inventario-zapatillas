@@ -20,16 +20,34 @@ try {
 }
 const DATA_FILE = path.join(DATA_DIR, 'inventario.json');
 
-const GH_REPO = process.env.GH_SYNC_REPO || '';
-const GH_TOKEN = process.env.GH_SYNC_TOKEN || '';
+const CONEXION_FILE = path.join(DATA_DIR, 'conexion.json');
 const GH_RUTA = 'inventario.json';
-const GH_ACTIVO = Boolean(GH_REPO && GH_TOKEN);
-const GH_URL = GH_REPO ? `https://api.github.com/repos/${GH_REPO}/contents/${GH_RUTA}` : '';
-const CABECERA_GH = { Authorization: `Bearer ${GH_TOKEN}`, 'User-Agent': 'inventario-zapatillas', Accept: 'application/vnd.github+json' };
+
+let ghRepo = '';
+let ghToken = '';
+let ghActivo = false;
+let ghUrl = '';
+
+function cargarConfiguracion() {
+  let cfg = {};
+  if (fs.existsSync(CONEXION_FILE)) {
+    try {
+      cfg = JSON.parse(fs.readFileSync(CONEXION_FILE, 'utf8')) || {};
+    } catch (e) {
+      cfg = {};
+    }
+  }
+  ghRepo = process.env.GH_SYNC_REPO || cfg.repo || '';
+  ghToken = process.env.GH_SYNC_TOKEN || cfg.token || '';
+  ghActivo = Boolean(ghRepo && ghToken);
+  ghUrl = ghRepo ? `https://api.github.com/repos/${ghRepo}/contents/${GH_RUTA}` : '';
+}
 
 async function leerGitHub() {
-  if (!GH_ACTIVO) return null;
-  const res = await fetch(GH_URL, { headers: CABECERA_GH });
+  if (!ghActivo) return null;
+  const res = await fetch(ghUrl, {
+    headers: { Authorization: `Bearer ${ghToken}`, 'User-Agent': 'inventario-zapatillas', Accept: 'application/vnd.github+json' },
+  });
   if (!res.ok) {
     if (res.status !== 404) console.error('Lectura GitHub fallo:', res.status);
     return null;
@@ -43,10 +61,11 @@ async function leerGitHub() {
 }
 
 async function escribirGitHub(lista) {
-  if (!GH_ACTIVO) return;
+  if (!ghActivo) return;
+  const cabecera = { Authorization: `Bearer ${ghToken}`, 'User-Agent': 'inventario-zapatillas', Accept: 'application/vnd.github+json' };
   let sha;
   try {
-    const actual = await fetch(GH_URL, { headers: CABECERA_GH });
+    const actual = await fetch(ghUrl, { headers: cabecera });
     if (actual.status === 404) sha = undefined;
     else if (!actual.ok) {
       console.error('Sync: lectura previa', actual.status);
@@ -54,9 +73,9 @@ async function escribirGitHub(lista) {
     } else sha = (await actual.json()).sha;
     const body = { message: 'Actualizar inventario', content: Buffer.from(JSON.stringify(lista, null, 2)).toString('base64') };
     if (sha) body.sha = sha;
-    const res = await fetch(GH_URL, {
+    const res = await fetch(ghUrl, {
       method: 'PUT',
-      headers: { ...CABECERA_GH, 'Content-Type': 'application/json' },
+      headers: { ...cabecera, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
     if (!res.ok) console.error('Sync: escritura', res.status);
@@ -65,8 +84,20 @@ async function escribirGitHub(lista) {
   }
 }
 
+async function cargarDesdeGitHub() {
+  if (!ghActivo) return false;
+  const datos = await leerGitHub();
+  if (datos && Array.isArray(datos) && datos.length) {
+    inventario = datos;
+    fs.writeFileSync(DATA_FILE, JSON.stringify(inventario, null, 2));
+    return true;
+  }
+  return false;
+}
+
 let colaSync = Promise.resolve();
 function sincronizarGitHub() {
+  if (!ghActivo) return Promise.resolve();
   const copia = JSON.parse(JSON.stringify(inventario));
   colaSync = colaSync.then(() => escribirGitHub(copia)).catch((e) => console.error('Sync GitHub:', e.message));
   return colaSync;
@@ -109,12 +140,13 @@ function semillarDesdeExcel() {
 
 cargarJSON();
 migrarFotos();
+cargarConfiguracion();
 if (!inventario.length) {
   const archivo = semillarDesdeExcel();
   if (archivo) console.log('Datos cargados desde:', archivo);
 }
 
-if (GH_ACTIVO) {
+if (ghActivo) {
   leerGitHub().then((datosNube) => {
     if (datosNube && Array.isArray(datosNube) && datosNube.length) {
       inventario = datosNube;
@@ -399,6 +431,41 @@ function crearServidor() {
     } catch (e) {
       return enviar(res, 400, { error: 'No se pudo procesar el Excel' });
     }
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/conexion') {
+    return enviar(res, 200, {
+      activo: ghActivo,
+      repo: ghRepo || null,
+      viaEntorno: Boolean(process.env.GH_SYNC_TOKEN),
+    });
+  }
+
+  if (req.method === 'PUT' && url.pathname === '/api/conexion') {
+    try {
+      const item = await leerCuerpo(req);
+      const token = String(item.token || '').trim();
+      if (!token) return enviar(res, 400, { error: 'Falta el token de GitHub' });
+      const repo = String(item.repo || 'lexconsiliumconsultores/inventario-datos').trim();
+      fs.writeFileSync(CONEXION_FILE, JSON.stringify({ repo, token }, null, 2));
+      cargarConfiguracion();
+      const cargado = await cargarDesdeGitHub();
+      if (!cargado && inventario.length) {
+        await sincronizarGitHub();
+      }
+      return enviar(res, 200, { ok: true, activo: ghActivo, repo: ghRepo, cargado });
+    } catch (e) {
+      return enviar(res, 400, { error: 'No se pudo guardar la conexion' });
+    }
+  }
+
+  if (req.method === 'DELETE' && url.pathname === '/api/conexion') {
+    if (process.env.GH_SYNC_TOKEN) {
+      return enviar(res, 400, { error: 'La sincronizacion esta fijada por entorno; no se puede desconectar' });
+    }
+    fs.rmSync(CONEXION_FILE, { force: true });
+    cargarConfiguracion();
+    return enviar(res, 200, { ok: true, activo: false });
   }
 
   res.writeHead(404);
