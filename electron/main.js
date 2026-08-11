@@ -1,4 +1,11 @@
 const { app, BrowserWindow, dialog, Menu } = require('electron');
+
+if (typeof app === 'string' || typeof Menu === 'undefined') {
+  console.error('electron/main.js es solo para la app de escritorio.');
+  console.error('Para la version web ejecuta: npm start  (corre node server.js)');
+  process.exit(1);
+}
+
 const path = require('path');
 const fs = require('fs');
 const { iniciar } = require(path.join(__dirname, '..', 'server.js'));
