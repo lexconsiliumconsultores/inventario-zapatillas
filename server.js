@@ -3,12 +3,22 @@ const fs = require('fs');
 const path = require('path');
 const { cargarDesdeExcel, buscarArchivoExcel } = require('./excel');
 
-const DATA_DIR = process.env.DATA_DIR || __dirname;
-const DATA_FILE = path.join(DATA_DIR, 'inventario.json');
-const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 const PORT = process.env.PORT || 3000;
 
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+const DATA_DIR_PEDIDO = process.env.DATA_DIR || __dirname;
+let DATA_DIR = DATA_DIR_PEDIDO;
+let UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
+try {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+} catch (e) {
+  if (DATA_DIR_PEDIDO !== __dirname) {
+    console.error(`No se puede escribir en DATA_DIR=${DATA_DIR_PEDIDO} (${e.code}). Uso la carpeta del proyecto.`);
+    DATA_DIR = __dirname;
+    UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  }
+}
+const DATA_FILE = path.join(DATA_DIR, 'inventario.json');
 
 let inventario = [];
 
