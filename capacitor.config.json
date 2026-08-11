@@ -1,0 +1,13 @@
+{
+  "appId": "com.velvetstore.inventario",
+  "appName": "Velvet Store",
+  "webDir": "public",
+  "server": {
+    "url": "https://inventario-zapatillas-1.onrender.com",
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

@@ -2,3 +2,10 @@ node_modules/
 inventario.json
 *.log
 dist/
+android/keystore.properties
+android/velvet-store.keystore
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/app/src/main/assets/public/
