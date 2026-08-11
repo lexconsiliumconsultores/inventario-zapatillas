@@ -7,8 +7,8 @@ if (typeof app === 'string' || typeof Menu === 'undefined') {
 }
 
 const path = require('path');
-const fs = require('fs');
 const { iniciar } = require(path.join(__dirname, '..', 'server.js'));
+const { autoUpdater } = require('electron-updater');
 
 let ventana = null;
 
@@ -30,6 +30,54 @@ function crearVentana(puerto) {
   ventana.on('page-title-updated', (e) => e.preventDefault());
 }
 
+function configurarActualizaciones() {
+  autoUpdater.autoDownload = false;
+
+  autoUpdater.on('update-available', (info) => {
+    const destino = ventana || BrowserWindow.getFocusedWindow();
+    if (!destino) return;
+    dialog
+      .showMessageBox(destino, {
+        type: 'info',
+        title: 'Actualizacion disponible',
+        message: `Hay una nueva version de Velvet Store (${info.version})`,
+        detail: '¿Quieres descargarla e instalarla?',
+        buttons: ['Descargar', 'Ahora no'],
+        defaultId: 0,
+        cancelId: 1,
+      })
+      .then(({ response }) => {
+        if (response === 0) autoUpdater.downloadUpdate();
+      });
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    const destino = ventana || BrowserWindow.getFocusedWindow();
+    if (!destino) return;
+    dialog
+      .showMessageBox(destino, {
+        type: 'info',
+        title: 'Actualizacion lista',
+        message: 'La actualizacion se instala al cerrar la app.',
+        detail: 'Reiniciar ahora para aplicar los cambios.',
+        buttons: ['Reiniciar ahora', 'Mas tarde'],
+        defaultId: 0,
+        cancelId: 1,
+      })
+      .then(({ response }) => {
+        if (response === 0) autoUpdater.quitAndInstall();
+      });
+  });
+
+  autoUpdater.on('error', (e) => console.error('AutoUpdate:', e.message));
+
+  autoUpdater.on('update-not-available', () => console.log('Sin actualizaciones'));
+
+  setTimeout(() => {
+    autoUpdater.checkForUpdates().catch((e) => console.error('AutoUpdate check:', e.message));
+  }, 5000);
+}
+
 const menu = Menu.buildFromTemplate([
   {
     label: 'Archivo',
@@ -39,6 +87,12 @@ const menu = Menu.buildFromTemplate([
         accelerator: 'F5',
         click: () => {
           if (ventana) ventana.webContents.send('recargar-excel');
+        },
+      },
+      {
+        label: 'Buscar actualizaciones',
+        click: () => {
+          autoUpdater.checkForUpdates().catch((e) => console.error('AutoUpdate check:', e.message));
         },
       },
       { type: 'separator' },
@@ -53,6 +107,7 @@ app.whenReady().then(async () => {
     const server = await iniciar(0);
     const puerto = server.address().port;
     crearVentana(puerto);
+    configurarActualizaciones();
   } catch (e) {
     dialog.showErrorBox('Error', 'No se pudo iniciar el servidor: ' + e.message);
     app.quit();
