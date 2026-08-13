@@ -54,10 +54,21 @@ function pintar() {
     const chips = item.tallas
       .map((t) => {
         const s = Number(t.stock) || 0;
-        let clase = 'chip-talla ok';
-        if (s <= 2 && s > 0) clase = 'chip-talla baja';
-        if (s <= 0) clase = 'chip-talla cero';
-        return `<span class="${clase}">${t.talla} · ${s}</span>`;
+        let clase = 'ok';
+        if (s <= 2 && s > 0) clase = 'baja';
+        if (s <= 0) clase = 'cero';
+        const talla = esc(t.talla);
+        return `
+          <div class="talla-item ${clase}">
+            <span class="chip-talla ${clase}">${talla} · ${s}</span>
+            <div class="talla-botones">
+              <button class="mini" data-accion="t-venta" data-id="${item.id}" data-talla="${talla}">Vender</button>
+              <button class="mini" data-accion="t-alta" data-id="${item.id}" data-talla="${talla}">Sumar</button>
+              <button class="mini" data-accion="t-resta" data-id="${item.id}" data-talla="${talla}">Restar</button>
+              <button class="mini" data-accion="t-editar" data-id="${item.id}" data-talla="${talla}">Editar</button>
+              <button class="mini" data-accion="t-eliminar" data-id="${item.id}" data-talla="${talla}">Eliminar</button>
+            </div>
+          </div>`;
       })
       .join('') || '<em>sin tallas</em>';
 
@@ -140,6 +151,85 @@ tbody.addEventListener('click', async (e) => {
   const btn = e.target.closest('button');
   if (!btn) return;
   const id = Number(btn.dataset.id);
+  const talla = btn.dataset.talla;
+
+  if (btn.dataset.accion === 't-venta') {
+    const item = inventario.find((i) => i.id === id);
+    if (!item) return;
+    itemVenta = item;
+    const sel = document.getElementById('venta-talla');
+    sel.innerHTML = item.tallas
+      .filter((t) => String(t.talla) === talla)
+      .map((t) => `<option value="${esc(t.talla)}">Talla ${esc(t.talla)} · stock ${t.stock}</option>`)
+      .join('');
+    document.getElementById('venta-cantidad').value = '1';
+    document.getElementById('titulo-venta').textContent = `Vender · ${item.codigo} ${item.producto}`;
+    abrirModal(modalVenta);
+    return;
+  }
+
+  if (btn.dataset.accion === 't-alta') {
+    const item = inventario.find((i) => i.id === id);
+    if (!item) return;
+    itemAlta = item;
+    document.getElementById('alta-talla').value = talla;
+    document.getElementById('alta-cantidad').value = '1';
+    abrirModal(modalAlta);
+    return;
+  }
+
+  if (btn.dataset.accion === 't-resta') {
+    const item = inventario.find((i) => i.id === id);
+    if (!confirm(`¿Restar 1 unidad de la talla ${talla} de "${item.producto}"?`)) return;
+    const res = await fetch(`/api/inventario/${id}/baja`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ talla, cantidad: 1 }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    cargar();
+    return;
+  }
+
+  if (btn.dataset.accion === 't-editar') {
+    const item = inventario.find((i) => i.id === id);
+    if (!item) return;
+    const variante = item.tallas.find((v) => String(v.talla) === talla);
+    if (!variante) return;
+    const nuevaTalla = prompt('Nueva talla:', variante.talla);
+    if (nuevaTalla === null) return;
+    const nuevoStock = prompt('Nuevo stock:', variante.stock);
+    if (nuevoStock === null) return;
+    const res = await fetch(`/api/inventario/${id}/talla`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ anterior: variante.talla, talla: nuevaTalla, stock: Number(nuevoStock) || 0 }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    cargar();
+    return;
+  }
+
+  if (btn.dataset.accion === 't-eliminar') {
+    const item = inventario.find((i) => i.id === id);
+    if (!confirm(`¿Eliminar la talla ${talla} de "${item.producto}"?`)) return;
+    const res = await fetch(`/api/inventario/${id}/talla/${encodeURIComponent(talla)}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    cargar();
+    return;
+  }
 
   if (btn.dataset.accion === 'eliminar') {
     const item = inventario.find((i) => i.id === id);

@@ -328,6 +328,24 @@ function crearServidor() {
     return enviar(res, 200, { ok: true, inventario });
   }
 
+  if (req.method === 'PUT' && url.pathname.match(/^\/api\/inventario\/\d+\/talla$/)) {
+    try {
+      const id = parseInt(url.pathname.split('/')[3], 10);
+      const item = await leerCuerpo(req);
+      const prod = inventario.find((i) => i.id === id);
+      if (!prod) return enviar(res, 404, { error: 'No encontrado' });
+      const anterior = String(item.anterior ?? item.talla).trim();
+      const variante = (prod.tallas || []).find((v) => String(v.talla) === anterior);
+      if (!variante) return enviar(res, 400, { error: 'Talla no existe' });
+      variante.talla = String(item.talla).trim();
+      variante.stock = Number(item.stock) || 0;
+      guardar();
+      return enviar(res, 200, { ok: true, inventario });
+    } catch (e) {
+      return enviar(res, 400, { error: 'JSON invalido' });
+    }
+  }
+
   if (req.method === 'PUT' && url.pathname.startsWith('/api/inventario/')) {
     try {
       const id = parseInt(url.pathname.split('/').pop(), 10);
@@ -395,6 +413,35 @@ function crearServidor() {
     } catch (e) {
       return enviar(res, 400, { error: 'JSON invalido' });
     }
+  }
+
+  if (req.method === 'POST' && url.pathname.match(/^\/api\/inventario\/\d+\/baja$/)) {
+    try {
+      const id = parseInt(url.pathname.split('/')[3], 10);
+      const item = await leerCuerpo(req);
+      const prod = inventario.find((i) => i.id === id);
+      if (!prod) return enviar(res, 404, { error: 'No encontrado' });
+      const cantidad = Number(item.cantidad) || 1;
+      const variante = (prod.tallas || []).find((v) => String(v.talla) === String(item.talla));
+      if (!variante) return enviar(res, 400, { error: 'Talla no existe' });
+      if (variante.stock - cantidad < 0) return enviar(res, 400, { error: `Stock insuficiente: quedan ${variante.stock}` });
+      variante.stock -= cantidad;
+      guardar();
+      return enviar(res, 200, { ok: true, inventario });
+    } catch (e) {
+      return enviar(res, 400, { error: 'JSON invalido' });
+    }
+  }
+
+  if (req.method === 'DELETE' && url.pathname.match(/^\/api\/inventario\/\d+\/talla\/.+$/)) {
+    const id = parseInt(url.pathname.split('/')[3], 10);
+    const talla = decodeURIComponent(url.pathname.split('/')[5]);
+    const prod = inventario.find((i) => i.id === id);
+    if (prod) {
+      prod.tallas = (prod.tallas || []).filter((v) => String(v.talla) !== talla);
+      guardar();
+    }
+    return enviar(res, 200, { ok: true, inventario });
   }
 
   if (req.method === 'DELETE' && url.pathname.startsWith('/api/inventario/')) {
