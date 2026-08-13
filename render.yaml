@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: velvet-store-fzmi
+    name: velvet-store-smec
     runtime: node
     buildCommand: npm install --omit=dev --no-audit --no-fund
     startCommand: npm start

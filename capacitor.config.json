@@ -3,7 +3,7 @@
   "appName": "Velvet Store",
   "webDir": "public",
   "server": {
-    "url": "https://velvet-store-fzmi.onrender.com",
+    "url": "https://velvet-store-smec.onrender.com",
     "androidScheme": "https",
     "cleartext": true
   },
