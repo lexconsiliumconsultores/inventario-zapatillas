@@ -500,9 +500,127 @@ tbody tr:hover {
 
 @media (max-width: 800px) {
   main {
-    padding: 14px;
+    padding: 12px;
   }
   header h1 {
     font-size: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  header {
+    padding: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .marca .logo {
+    width: 48px;
+    height: 48px;
+  }
+  .totales .grupo b {
+    font-size: 15px;
+  }
+  .totales .grupo span {
+    font-size: 11px;
+  }
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .toolbar button {
+    width: 100%;
+  }
+  .toolbar input {
+    width: 100%;
+    min-width: 0;
+  }
+  .sync-estado {
+    margin-left: 0;
+  }
+  .tabs button {
+    padding: 7px 14px;
+    font-size: 13px;
+  }
+  table {
+    min-width: 0;
+  }
+  thead {
+    display: none;
+  }
+  table,
+  tbody,
+  tr,
+  td {
+    display: block;
+    width: 100%;
+  }
+  tr {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    padding: 12px;
+    background: #fff;
+  }
+  td {
+    border: none;
+    padding: 6px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    text-align: right;
+    font-size: 13px;
+  }
+  td::before {
+    content: attr(data-etiqueta);
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #64748b;
+  }
+  td[data-etiqueta="Tallas / Stock"] {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+  }
+  td[data-etiqueta="Acciones"] {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+  }
+  td[data-etiqueta="Acciones"]::before {
+    margin-bottom: 6px;
+  }
+  .acciones-celda {
+    width: 100%;
+  }
+  .acciones-celda .mini {
+    flex: 1;
+    padding: 9px;
+    font-size: 13px;
+  }
+  .talla-item {
+    width: 100%;
+    margin: 0 0 8px;
+  }
+  .talla-botones .mini {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+  .thumb {
+    width: 64px;
+    height: 64px;
+  }
+  .modal-caja {
+    padding: 18px;
+  }
+  .fila-talla {
+    flex-wrap: wrap;
+  }
+  .fila-talla input {
+    flex: 1;
+    min-width: 90px;
   }
 }

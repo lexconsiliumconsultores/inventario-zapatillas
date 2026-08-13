@@ -73,18 +73,18 @@ function pintar() {
       .join('') || '<em>sin tallas</em>';
 
     tr.innerHTML = `
-      <td>${item.foto ? `<a href="${esc(item.foto)}" target="_blank"><img class="thumb" src="${esc(item.foto)}" alt="${esc(item.producto)}" /></a>` : '<span class="sin-foto">Sin foto</span>'}</td>
-      <td><b>${esc(item.codigo || '')}</b></td>
-      <td>
+      <td data-etiqueta="Foto">${item.foto ? `<a href="${esc(item.foto)}" target="_blank"><img class="thumb" src="${esc(item.foto)}" alt="${esc(item.producto)}" /></a>` : '<span class="sin-foto">Sin foto</span>'}</td>
+      <td data-etiqueta="Codigo"><b>${esc(item.codigo || '')}</b></td>
+      <td data-etiqueta="Producto">
         <span class="badge-temporada">${esc(item.temporada)}</span><br>
         <b>${esc(item.producto || '')}</b>
       </td>
-      <td>${esc(item.categoria || '')}</td>
-      <td>${esc(item.genero || '')}</td>
-      <td>${formatearPrecio(item.precio || 0)}</td>
-      <td>${chips}</td>
-      <td class="total-stock ${stockTotal <= 2 ? 'baja' : ''}">${stockTotal}</td>
-      <td>
+      <td data-etiqueta="Categoria">${esc(item.categoria || '')}</td>
+      <td data-etiqueta="Genero">${esc(item.genero || '')}</td>
+      <td data-etiqueta="Precio">${formatearPrecio(item.precio || 0)}</td>
+      <td data-etiqueta="Tallas / Stock">${chips}</td>
+      <td data-etiqueta="Total"><span class="total-stock ${stockTotal <= 2 ? 'baja' : ''}">${stockTotal}</span></td>
+      <td data-etiqueta="Acciones">
         <div class="acciones-celda">
           <button class="mini btn-vender" data-accion="venta" data-id="${item.id}">Vender</button>
           <button class="mini btn-alta" data-accion="alta" data-id="${item.id}">Sumar</button>
