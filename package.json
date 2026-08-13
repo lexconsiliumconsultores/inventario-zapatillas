@@ -5,76 +5,20 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "electron": "electron .",
     "iconos": "node scripts/generar-iconos.js",
-    "dist": "electron-builder --win",
-    "dist:win": "electron-builder --win",
-    "dist:portable": "electron-builder --win portable",
-    "dist:publish": "electron-builder --win --publish always"
+    "android:sync": "npx cap sync android",
+    "android:build": "cd android && gradlew.bat assembleDebug"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
-    "electron-updater": "^6.8.9",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@capacitor/android": "^8.5.0",
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.5.0",
-    "electron": "^43.3.0",
-    "electron-builder": "^26.15.3",
     "jimp": "^1.6.1"
-  },
-  "build": {
-    "appId": "com.inventario.zapatillas",
-    "productName": "Velvet Store",
-    "extraMetadata": {
-      "main": "electron/main.js"
-    },
-    "directories": {
-      "output": "dist",
-      "buildResources": "build"
-    },
-    "files": [
-      "server.js",
-      "excel.js",
-      "inspect.js",
-      "public/**/*",
-      "electron/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "build/icon.png"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "shortcutName": "Velvet Store"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "lexconsiliumconsultores",
-        "repo": "inventario-zapatillas"
-      }
-    ],
-    "icon": "build/icon.png"
   }
 }

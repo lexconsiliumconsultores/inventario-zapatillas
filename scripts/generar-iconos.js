@@ -79,13 +79,10 @@ function dibujarIcono(x, y, ancho, alto) {
   return [color[0], color[1], color[2], 255];
 }
 
-const buildDir = path.join(__dirname, '..', 'build');
 const publicDir = path.join(__dirname, '..', 'public');
-fs.mkdirSync(buildDir, { recursive: true });
 fs.mkdirSync(publicDir, { recursive: true });
 
 const destinos = [
-  [path.join(buildDir, 'icon.png'), 512],
   [path.join(publicDir, 'icono-512.png'), 512],
   [path.join(publicDir, 'icono-192.png'), 192],
   [path.join(publicDir, 'icono-maskable-512.png'), 512],

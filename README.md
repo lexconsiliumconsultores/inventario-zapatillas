@@ -3,7 +3,7 @@
 Control de inventario de zapatillas: stock por talla, ventas, altas de stock, fotos y carga desde Excel.
 
 - Web + PWA (instalable en celulares y tablets)
-- App de escritorio para Windows (Electron)
+- App Android (APK con Capacitor)
 - API REST sin dependencias externas (solo `xlsx`)
 
 ## Cómo correr
@@ -28,34 +28,30 @@ Al primer arranque busca un archivo `.xlsx` en la carpeta del proyecto o en `Dow
 
 Si quieres dejar el inventario vacío en línea, simplemente no subas ningún archivo `.xlsx`.
 
-## App Windows (instalador)
+## App Android (APK)
+
+La app Android se configura con Capacitor apuntando a la web en línea.
 
 ```bash
-npm run dist
+npm run android:sync   # npx cap sync android (copia public/ a la app)
+npm run android:build  # genera el APK de debug
 ```
 
-Genera en `dist/`:
-- `Inventario Zapatillas Setup x.y.z.exe` (instalador NSIS)
-- `Inventario Zapatillas x.y.z.exe` (versión portable, no necesita instalar)
+El APK queda en `android/app/build/outputs/apk/debug/`. Instálalo en cualquier celular Android.
 
-La app abre una ventana con el inventario. Detecta el Excel en la misma carpeta/proyecto o en `Downloads`.
+## Nube y local
 
-## Nube y local al mismo tiempo
+La web en línea (Render) guarda sus propios datos. No hay app de escritorio; todo el uso es desde el navegador (PWA) o la app Android, que apuntan a la misma web.
 
-La web (Render) y la app Windows usan el mismo código pero datos separados:
-
-- **Windows**: guarda sus datos en `inventario.json` en la carpeta donde instalaste la app (modo local/offline).
-- **Línea**: Render usa su propio almacenamiento persistente en disco.
-
-> Para sincronizar entre ambos se puede añadir después un botón "Exportar/Importar copia" con `inventario.json`.
+Con el botón "Conectar sincronización" se pueden compartir los datos con un repo de GitHub.
 
 ## Estructura
 
 ```
 server.js              Servidor HTTP + API
 excel.js               Lectura de Excel (hojas Verano, Invierno, Niños)
-electron/main.js       Ventana de escritorio (Electron)
 public/                Web + PWA (manifest, service worker, iconos)
+android/               Proyecto Android (Capacitor)
 scripts/generar-iconos.js   Genera iconos PNG
 uploads/               Fotos de productos
 inventario.json        Datos (no se sube a git)
