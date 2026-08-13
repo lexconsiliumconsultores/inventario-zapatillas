@@ -3,7 +3,7 @@
   "appName": "Velvet Store",
   "webDir": "public",
   "server": {
-    "url": "https://inventario-zapatillas-fzmi.onrender.com",
+    "url": "https://velvet-store-fzmi.onrender.com",
     "androidScheme": "https",
     "cleartext": true
   },

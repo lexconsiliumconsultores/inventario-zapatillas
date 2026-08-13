@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: inventario-zapatillas
+    name: velvet-store-fzmi
     runtime: node
     buildCommand: npm install --omit=dev --no-audit --no-fund
     startCommand: npm start
