@@ -1,4 +1,4 @@
-const CACHE = 'inventario-v2';
+const CACHE = 'inventario-v3';
 const ESTATICOS = [
   '/',
   '/index.html',
@@ -33,17 +33,14 @@ self.addEventListener('fetch', (e) => {
     return;
   }
   e.respondWith(
-    caches.match(e.request).then((guardado) => {
-      const red = fetch(e.request)
-        .then((res) => {
-          if (res.ok && url.pathname.startsWith('/') && !url.pathname.startsWith('/uploads/')) {
-            const copia = res.clone();
-            caches.open(CACHE).then((c) => c.put(e.request, copia));
-          }
-          return res;
-        })
-        .catch(() => guardado);
-      return guardado || red;
-    })
+    fetch(e.request)
+      .then((res) => {
+        if (res.ok && url.pathname.startsWith('/') && !url.pathname.startsWith('/uploads/')) {
+          const copia = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copia));
+        }
+        return res;
+      })
+      .catch(() => caches.match(e.request).then((r) => r || Promise.reject()))
   );
 });
