@@ -185,6 +185,8 @@ tbody.addEventListener('click', async (e) => {
     document.getElementById('genero').value = item.genero || '';
     document.getElementById('precio').value = item.precio || 0;
     document.getElementById('titulo-form').textContent = 'Editar Producto';
+    document.getElementById('tallas-iniciales').innerHTML = '';
+    (item.tallas || []).forEach((t) => agregarFilaTalla(t.talla, t.stock));
     fotoPendiente = null;
     quitarFoto = false;
     mostrarFotoActual(item.foto);
@@ -255,6 +257,13 @@ formItem.addEventListener('submit', async (e) => {
   };
 
   if (id) {
+    const filas = [...document.querySelectorAll('.fila-talla')];
+    payload.tallas = filas
+      .map((f) => ({
+        talla: f.querySelector('.t-talla').value.trim(),
+        stock: Number(f.querySelector('.t-stock').value) || 0,
+      }))
+      .filter((t) => t.talla);
     const res = await fetch(`/api/inventario/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -349,14 +358,14 @@ document.getElementById('btn-nuevo').addEventListener('click', () => {
 
 document.getElementById('btn-agregar-talla').addEventListener('click', agregarFilaTalla);
 
-function agregarFilaTalla() {
+function agregarFilaTalla(talla = '', stock = '') {
   const contenedor = document.getElementById('tallas-iniciales');
   const fila = document.createElement('div');
   fila.className = 'fila-talla';
   fila.innerHTML = `
-    <input type="number" class="t-talla" placeholder="Talla" min="1" />
-    <input type="number" class="t-stock" placeholder="Stock" min="0" value="1" />
-    <button type="button" class="quitar">x</button>
+    <input type="number" class="t-talla" placeholder="Talla" min="1" value="${esc(String(talla))}" />
+    <input type="number" class="t-stock" placeholder="Stock" min="0" value="${esc(String(stock))}" />
+    <button type="button" class="quitar" title="Eliminar talla">x</button>
   `;
   fila.querySelector('.quitar').addEventListener('click', () => fila.remove());
   contenedor.appendChild(fila);

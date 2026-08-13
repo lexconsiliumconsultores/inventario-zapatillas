@@ -335,6 +335,11 @@ function crearServidor() {
       const idx = inventario.findIndex((i) => i.id === id);
       if (idx === -1) return enviar(res, 404, { error: 'No encontrado' });
       const actual = inventario[idx];
+      const tallas = Array.isArray(item.tallas)
+        ? item.tallas
+            .map((t) => ({ talla: String(t.talla).trim(), stock: Number(t.stock) || 0 }))
+            .filter((t) => t.talla)
+        : actual.tallas;
       inventario[idx] = {
         ...actual,
         producto: String(item.producto ?? actual.producto).trim(),
@@ -343,6 +348,7 @@ function crearServidor() {
         genero: String(item.genero ?? actual.genero).trim() || 'Unisex',
         precio: Number(item.precio) ?? actual.precio,
         temporada: item.temporada || actual.temporada,
+        tallas,
       };
       guardar();
       return enviar(res, 200, { ok: true, inventario });
