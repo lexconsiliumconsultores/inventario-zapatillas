@@ -8,14 +8,17 @@ const origExcel = document.getElementById('orig-excel');
 const formItem = document.getElementById('form-item');
 const formVenta = document.getElementById('form-venta');
 const formAlta = document.getElementById('form-alta');
+const formBaja = document.getElementById('form-baja');
 const modalForm = document.getElementById('modal-form');
 const modalVenta = document.getElementById('modal-venta');
 const modalAlta = document.getElementById('modal-alta');
+const modalBaja = document.getElementById('modal-baja');
 
 let inventario = [];
 let temporada = '';
 let itemVenta = null;
 let itemAlta = null;
+let itemBaja = null;
 let fotoPendiente = null;
 let quitarFoto = false;
 
@@ -54,21 +57,10 @@ function pintar() {
     const chips = item.tallas
       .map((t) => {
         const s = Number(t.stock) || 0;
-        let clase = 'ok';
-        if (s <= 2 && s > 0) clase = 'baja';
-        if (s <= 0) clase = 'cero';
-        const talla = esc(t.talla);
-        return `
-          <div class="talla-item ${clase}">
-            <span class="chip-talla ${clase}">${talla} · ${s}</span>
-            <div class="talla-botones">
-              <button class="mini" data-accion="t-venta" data-id="${item.id}" data-talla="${talla}">Vender</button>
-              <button class="mini" data-accion="t-alta" data-id="${item.id}" data-talla="${talla}">Sumar</button>
-              <button class="mini" data-accion="t-resta" data-id="${item.id}" data-talla="${talla}">Restar</button>
-              <button class="mini" data-accion="t-editar" data-id="${item.id}" data-talla="${talla}">Editar</button>
-              <button class="mini" data-accion="t-eliminar" data-id="${item.id}" data-talla="${talla}">Eliminar</button>
-            </div>
-          </div>`;
+        let clase = 'chip-talla ok';
+        if (s <= 2 && s > 0) clase = 'chip-talla baja';
+        if (s <= 0) clase = 'chip-talla cero';
+        return `<span class="${clase}">${t.talla} · ${s}</span>`;
       })
       .join('') || '<em>sin tallas</em>';
 
@@ -88,6 +80,7 @@ function pintar() {
         <div class="acciones-celda">
           <button class="mini btn-vender" data-accion="venta" data-id="${item.id}">Vender</button>
           <button class="mini btn-alta" data-accion="alta" data-id="${item.id}">Sumar</button>
+          <button class="mini btn-restar" data-accion="restar" data-id="${item.id}">Restar</button>
           <button class="mini btn-editar" data-accion="editar" data-id="${item.id}">Editar</button>
           <button class="mini btn-eliminar" data-accion="eliminar" data-id="${item.id}">Eliminar</button>
         </div>
@@ -122,6 +115,7 @@ function cerrarModales() {
   modalForm.hidden = true;
   modalVenta.hidden = true;
   modalAlta.hidden = true;
+  modalBaja.hidden = true;
 }
 
 document.addEventListener('click', (e) => {
@@ -151,83 +145,21 @@ tbody.addEventListener('click', async (e) => {
   const btn = e.target.closest('button');
   if (!btn) return;
   const id = Number(btn.dataset.id);
-  const talla = btn.dataset.talla;
 
-  if (btn.dataset.accion === 't-venta') {
+  if (btn.dataset.accion === 'restar') {
     const item = inventario.find((i) => i.id === id);
-    if (!item) return;
-    itemVenta = item;
-    const sel = document.getElementById('venta-talla');
+    if (!item || !item.tallas.length) {
+      alert('Este producto no tiene tallas registradas.');
+      return;
+    }
+    itemBaja = item;
+    const sel = document.getElementById('baja-talla');
     sel.innerHTML = item.tallas
-      .filter((t) => String(t.talla) === talla)
       .map((t) => `<option value="${esc(t.talla)}">Talla ${esc(t.talla)} · stock ${t.stock}</option>`)
       .join('');
-    document.getElementById('venta-cantidad').value = '1';
-    document.getElementById('titulo-venta').textContent = `Vender · ${item.codigo} ${item.producto}`;
-    abrirModal(modalVenta);
-    return;
-  }
-
-  if (btn.dataset.accion === 't-alta') {
-    const item = inventario.find((i) => i.id === id);
-    if (!item) return;
-    itemAlta = item;
-    document.getElementById('alta-talla').value = talla;
-    document.getElementById('alta-cantidad').value = '1';
-    abrirModal(modalAlta);
-    return;
-  }
-
-  if (btn.dataset.accion === 't-resta') {
-    const item = inventario.find((i) => i.id === id);
-    if (!confirm(`¿Restar 1 unidad de la talla ${talla} de "${item.producto}"?`)) return;
-    const res = await fetch(`/api/inventario/${id}/baja`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ talla, cantidad: 1 }),
-    });
-    const data = await res.json();
-    if (data.error) {
-      alert(data.error);
-      return;
-    }
-    cargar();
-    return;
-  }
-
-  if (btn.dataset.accion === 't-editar') {
-    const item = inventario.find((i) => i.id === id);
-    if (!item) return;
-    const variante = item.tallas.find((v) => String(v.talla) === talla);
-    if (!variante) return;
-    const nuevaTalla = prompt('Nueva talla:', variante.talla);
-    if (nuevaTalla === null) return;
-    const nuevoStock = prompt('Nuevo stock:', variante.stock);
-    if (nuevoStock === null) return;
-    const res = await fetch(`/api/inventario/${id}/talla`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ anterior: variante.talla, talla: nuevaTalla, stock: Number(nuevoStock) || 0 }),
-    });
-    const data = await res.json();
-    if (data.error) {
-      alert(data.error);
-      return;
-    }
-    cargar();
-    return;
-  }
-
-  if (btn.dataset.accion === 't-eliminar') {
-    const item = inventario.find((i) => i.id === id);
-    if (!confirm(`¿Eliminar la talla ${talla} de "${item.producto}"?`)) return;
-    const res = await fetch(`/api/inventario/${id}/talla/${encodeURIComponent(talla)}`, { method: 'DELETE' });
-    const data = await res.json();
-    if (data.error) {
-      alert(data.error);
-      return;
-    }
-    cargar();
+    document.getElementById('baja-cantidad').value = '1';
+    document.getElementById('titulo-baja').textContent = `Restar · ${item.codigo} ${item.producto}`;
+    abrirModal(modalBaja);
     return;
   }
 
@@ -420,6 +352,25 @@ formAlta.addEventListener('submit', async (e) => {
     body: JSON.stringify({
       talla: document.getElementById('alta-talla').value,
       cantidad: Number(document.getElementById('alta-cantidad').value) || 0,
+    }),
+  });
+  const data = await res.json();
+  if (data.error) {
+    alert(data.error);
+    return;
+  }
+  cerrarModales();
+  cargar();
+});
+
+formBaja.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const res = await fetch(`/api/inventario/${itemBaja.id}/baja`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      talla: document.getElementById('baja-talla').value,
+      cantidad: Number(document.getElementById('baja-cantidad').value) || 1,
     }),
   });
   const data = await res.json();

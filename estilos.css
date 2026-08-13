@@ -242,38 +242,6 @@ tbody tr:hover {
   color: #64748b;
 }
 
-.talla-item {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 2px;
-  padding: 4px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #f8fafc;
-  vertical-align: top;
-}
-
-.talla-botones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-}
-
-.talla-botones .mini {
-  padding: 2px 6px;
-  font-size: 10px;
-  border: 1px solid #cbd5e1;
-  background: #ffffff;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.talla-botones .mini:hover {
-  background: #f1f5f9;
-}
-
 .total-stock {
   font-weight: 700;
 }
@@ -313,6 +281,15 @@ tbody tr:hover {
 
 .btn-alta:hover {
   background: #bfdbfe;
+}
+
+.btn-restar {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.btn-restar:hover {
+  background: #fde68a;
 }
 
 .btn-editar {
@@ -600,14 +577,6 @@ tbody tr:hover {
     flex: 1;
     padding: 9px;
     font-size: 13px;
-  }
-  .talla-item {
-    width: 100%;
-    margin: 0 0 8px;
-  }
-  .talla-botones .mini {
-    padding: 7px 10px;
-    font-size: 12px;
   }
   .thumb {
     width: 64px;

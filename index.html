@@ -160,6 +160,26 @@
     </div>
   </div>
 
+  <div class="modal fondo" id="modal-baja" hidden>
+    <div class="modal-caja">
+      <h2 id="titulo-baja">Restar Stock</h2>
+      <form id="form-baja">
+        <label>
+          Talla
+          <select id="baja-talla" required></select>
+        </label>
+        <label>
+          Cantidad a restar
+          <input type="number" id="baja-cantidad" min="1" value="1" required />
+        </label>
+        <div class="acciones">
+          <button type="submit" class="btn-primario">Restar</button>
+          <button type="button" class="btn-cancelar" data-cerrar="modal-baja">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="/app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
