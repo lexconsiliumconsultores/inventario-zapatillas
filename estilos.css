@@ -242,6 +242,38 @@ tbody tr:hover {
   color: #64748b;
 }
 
+.talla-item {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 2px;
+  padding: 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  vertical-align: top;
+}
+
+.talla-botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.talla-botones .mini {
+  padding: 2px 6px;
+  font-size: 10px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.talla-botones .mini:hover {
+  background: #f1f5f9;
+}
+
 .total-stock {
   font-weight: 700;
 }
