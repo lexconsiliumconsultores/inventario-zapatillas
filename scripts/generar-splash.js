@@ -1,40 +1,52 @@
+const { Jimp, rgbaToInt } = require('jimp');
 const fs = require('fs');
 const path = require('path');
-const { Jimp, ResizeStrategy } = require('jimp');
 
-const raiz = path.join(__dirname, '..');
-const logoRuta = path.join(raiz, 'public', 'logo-velvet.png');
+const ORIGEN = process.env.TEMP + '/velvet-origen.png';
+const FONDO = '#0f172a';
+const MARGEN = 0.22;
 
-const fondos = [
-  ['android/app/src/main/res/drawable/splash.png', 480, 320],
-  ['android/app/src/main/res/drawable-port-mdpi/splash.png', 320, 480],
-  ['android/app/src/main/res/drawable-port-xhdpi/splash.png', 720, 1280],
-  ['android/app/src/main/res/drawable-port-xxhdpi/splash.png', 960, 1600],
-  ['android/app/src/main/res/drawable-port-xxxhdpi/splash.png', 1280, 1920],
-  ['android/app/src/main/res/drawable-port-hdpi/splash.png', 480, 800],
-  ['android/app/src/main/res/drawable-land-mdpi/splash.png', 480, 320],
-  ['android/app/src/main/res/drawable-land-hdpi/splash.png', 800, 480],
-  ['android/app/src/main/res/drawable-land-xhdpi/splash.png', 1280, 720],
-  ['android/app/src/main/res/drawable-land-xxhdpi/splash.png', 1600, 960],
-  ['android/app/src/main/res/drawable-land-xxxhdpi/splash.png', 1920, 1280],
-];
+const splash = (ancho, alto, dibujar) => {
+  const img = new Jimp({ width: ancho, height: alto });
+  img.scan(0, 0, ancho, alto, (x, y) => {
+    const [r, g, b] = dibujar(x, y);
+    img.setPixelColor(rgbaToInt(r, g, b, 255), x, y);
+  });
+  return img;
+};
 
 (async () => {
-  const logo = await Jimp.read(logoRuta);
-  for (const [rel, w, h] of fondos) {
-    const px = new Jimp({ width: 1, height: 1 });
-    px.setPixelColor(0xff0f172a, 0, 0);
-    const bg = px.clone();
-    await bg.resize({ w, h, mode: ResizeStrategy.BEZIER });
-    const lado = Math.round(Math.min(w, h) * 0.55);
-    const logoTmp = logo.clone();
-    await logoTmp.resize({ w: lado, h: lado, mode: ResizeStrategy.BEZIER });
-    bg.composite(logoTmp, Math.round((w - lado) / 2), Math.round((h - lado) / 2));
-    const salida = path.join(raiz, rel);
-    await bg.write(salida);
-    console.log('Splash generado:', rel, `${w}x${h}`);
+  const logo = await Jimp.read(ORIGEN);
+  const resDir = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'res');
+  const destinos = [
+    ['drawable', 480, 320],
+    ['drawable-port-mdpi', 320, 480],
+    ['drawable-port-hdpi', 480, 800],
+    ['drawable-port-xhdpi', 720, 1280],
+    ['drawable-port-xxhdpi', 960, 1600],
+    ['drawable-port-xxxhdpi', 1280, 1920],
+    ['drawable-land-mdpi', 480, 320],
+    ['drawable-land-hdpi', 800, 480],
+    ['drawable-land-xhdpi', 1280, 720],
+    ['drawable-land-xxhdpi', 1600, 960],
+    ['drawable-land-xxxhdpi', 1920, 1280],
+  ];
+
+  for (const [carpeta, ancho, alto] of destinos) {
+    const lado = Math.min(ancho, alto) * (1 - MARGEN);
+    const escala = lado / logo.width;
+    const logoAncho = Math.round(logo.width * escala);
+    const logoAlto = Math.round(logo.height * escala);
+    const ox = Math.round((ancho - logoAncho) / 2);
+    const oy = Math.round((alto - logoAlto) / 2);
+    const redimensionado = logo.resize({ w: logoAncho, h: logoAlto });
+    const fondo = splash(ancho, alto, () => {
+      const [r, g, b] = [15, 23, 42];
+      return [r, g, b];
+    });
+    fondo.composite(redimensionado, ox, oy);
+    const ruta = path.join(resDir, carpeta, 'splash.png');
+    await fondo.write(ruta);
+    console.log('Splash:', carpeta, `${ancho}x${alto}`);
   }
-})().catch((e) => {
-  console.error('Error:', e);
-  process.exit(1);
-});
+})().catch((e) => console.error('Error:', e.message));
