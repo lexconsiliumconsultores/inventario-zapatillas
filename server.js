@@ -694,6 +694,7 @@ function crearServidor() {
         }
         variante.stock -= cantidad;
         detalle.push({
+          id: prod.id,
           producto: prod.producto,
           codigo: prod.codigo,
           temporada: prod.temporada,
@@ -732,6 +733,23 @@ function crearServidor() {
     pedido.despachado = true;
     guardarPedidos();
     return enviar(res, 200, { ok: true, pedido });
+  }
+
+  if (req.method === 'DELETE' && url.pathname.match(/^\/api\/pedidos\/\d+$/)) {
+    const id = parseInt(url.pathname.split('/')[3], 10);
+    const idx = pedidos.findIndex((p) => p.id === id);
+    if (idx === -1) return enviar(res, 404, { error: 'Pedido no encontrado' });
+    const pedido = pedidos[idx];
+    for (const linea of pedido.lineas) {
+      const prod = inventario.find((i) => i.id === Number(linea.id));
+      if (!prod) continue;
+      const variante = (prod.tallas || []).find((v) => String(v.talla) === String(linea.talla));
+      if (variante) variante.stock += Number(linea.cantidad) || 0;
+    }
+    pedidos.splice(idx, 1);
+    guardar();
+    guardarPedidos();
+    return enviar(res, 200, { ok: true, pedidos });
   }
 
   res.writeHead(404);
