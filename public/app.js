@@ -504,22 +504,54 @@ document.getElementById('archivo-excel').addEventListener('change', async (e) =>
 cargar();
 cargarSistema();
 
+const refrescar = document.getElementById('refrescar');
+const refrescarTexto = document.getElementById('refrescar-texto');
 let tocando = 0;
 let desdeY = 0;
+let refrescando = false;
+
+function mostrarRefrescar(texto, activo) {
+  if (activo) {
+    refrescarTexto.textContent = texto;
+    refrescar.hidden = false;
+  } else {
+    refrescar.hidden = true;
+  }
+}
+
 addEventListener('touchstart', (e) => {
-  if (window.scrollY <= 0) {
+  if (window.scrollY <= 0 && !refrescando) {
     tocando = 1;
     desdeY = e.touches[0].clientY;
+    mostrarRefrescar('Tira para actualizar', false);
   }
 }, { passive: true });
 
 addEventListener('touchmove', (e) => {
-  if (tocando && window.scrollY <= 0 && e.touches[0].clientY - desdeY > 90) {
-    tocando = 0;
-    navigator.vibrate && navigator.vibrate(50);
-    cargar();
+  if (!tocando || refrescando) return;
+  const delta = e.touches[0].clientY - desdeY;
+  if (window.scrollY <= 0 && delta > 0) {
+    e.preventDefault();
+    if (delta > 90) mostrarRefrescar('Suelta para actualizar', true);
+    else mostrarRefrescar('Tira para actualizar', true);
   }
-}, { passive: true });
+}, { passive: false });
+
+addEventListener('touchend', async (e) => {
+  if (!tocando) return;
+  tocando = 0;
+  const delta = e.changedTouches[0].clientY - desdeY;
+  if (window.scrollY <= 0 && delta > 90) {
+    refrescando = true;
+    mostrarRefrescar('Actualizando...', true);
+    navigator.vibrate && navigator.vibrate(50);
+    await Promise.all([cargar(), cargarSistema()]);
+    refrescando = false;
+    mostrarRefrescar('', false);
+  } else {
+    mostrarRefrescar('', false);
+  }
+});
 
 let ultimaActiva = 0;
 document.addEventListener('visibilitychange', () => {

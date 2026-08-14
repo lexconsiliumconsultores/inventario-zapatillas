@@ -1,6 +1,7 @@
-const { Jimp, rgbaToInt } = require('jimp');
-const fs = require('fs');
 const path = require('path');
+const { Jimp } = require('jimp');
+const loadFont = require('@jimp/plugin-print/load-font').loadFont;
+const { SANS_32_WHITE, SANS_64_WHITE, SANS_128_WHITE } = require(path.join(__dirname, '..', 'node_modules', '@jimp', 'plugin-print', 'dist', 'commonjs', 'fonts.js'));
 
 const ORIGEN = process.env.TEMP + '/velvet-origen.png';
 
@@ -18,13 +19,17 @@ const ORIGEN = process.env.TEMP + '/velvet-origen.png';
 
   for (const [carpeta, size] of sizes) {
     const cuadrado = new Jimp({ width: size, height: size });
-    cuadrado.scan(0, 0, size, size, (x, y) => {
-      cuadrado.setPixelColor(rgbaToInt(15, 23, 42, 0), x, y);
-    });
-    const margen = Math.round(size * 0.08);
-    const lado = size - margen * 2;
-    const redimensionado = logo.resize({ w: lado, h: lado });
-    cuadrado.composite(redimensionado, margen, margen);
+    const logoR = await logo.clone();
+    const lado = Math.round(size * 0.5);
+    logoR.resize({ w: lado, h: lado });
+    const ox = Math.round((size - lado) / 2);
+    const oy = Math.round(size * 0.12);
+    cuadrado.composite(logoR, ox, oy);
+    const fuenteTxt = size >= 360 ? SANS_128_WHITE : size >= 180 ? SANS_64_WHITE : SANS_32_WHITE;
+    const fuente = await loadFont(fuenteTxt);
+    const texto = 'V 1.0.2';
+    const ty = oy + lado + Math.round(size * 0.05);
+    cuadrado.print({ font: fuente, x: 0, y: ty, text: texto, alignmentX: 2 });
     await cuadrado.write(path.join(resDir, carpeta, 'splash_logo.png'));
     console.log('splash_logo:', carpeta, size + 'x' + size);
   }
