@@ -329,6 +329,43 @@ tbody tr:hover {
   display: none !important;
 }
 
+/* Indicador de actualizacion (pull-to-refresh) */
+#refrescar[hidden] {
+  display: none !important;
+}
+
+#refrescar {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 2px;
+}
+
+.refrescar-caja {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 8px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  color: #334155;
+  font-size: 13px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #c7d2fe;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}
+
 .aviso-act {
   position: fixed;
   top: 12px;
