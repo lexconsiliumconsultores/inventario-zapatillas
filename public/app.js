@@ -22,7 +22,7 @@ let itemBaja = null;
 let fotoPendiente = null;
 let quitarFoto = false;
 
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.0.2';
 
 (async () => {
   try {
