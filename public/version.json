@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "apk": "/velvet-store.apk",
-  "nota": "V 1.0.2: logo grande al abrir la app y actualizaciones"
+  "nota": "V 1.0.3: prueba de actualizacion automatica"
 }
