@@ -217,16 +217,43 @@ tbody.addEventListener('click', async (e) => {
   }
 });
 
-document.getElementById('foto').addEventListener('change', (e) => {
+function comprimirFoto(archivo, maxLado = 400, calidad = 0.7) {
+  return new Promise((resolve, reject) => {
+    const lector = new FileReader();
+    lector.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width;
+        let h = img.height;
+        if (Math.max(w, h) > maxLado) {
+          const factor = maxLado / Math.max(w, h);
+          w = Math.round(w * factor);
+          h = Math.round(h * factor);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', calidad));
+      };
+      img.onerror = () => reject(new Error('Imagen invalida'));
+      img.src = lector.result;
+    };
+    lector.onerror = () => reject(lector.error);
+    lector.readAsDataURL(archivo);
+  });
+}
+
+document.getElementById('foto').addEventListener('change', async (e) => {
   const archivo = e.target.files[0];
   if (!archivo) return;
-  const lector = new FileReader();
-  lector.onload = () => {
-    fotoPendiente = lector.result;
+  try {
+    fotoPendiente = await comprimirFoto(archivo);
     quitarFoto = false;
     mostrarFotoActual(fotoPendiente);
-  };
-  lector.readAsDataURL(archivo);
+  } catch (err) {
+    alert('No se pudo procesar la imagen.');
+  }
 });
 
 document.getElementById('btn-quitar-foto').addEventListener('click', () => {
