@@ -155,9 +155,18 @@ if (ghActivo) {
     } else if (inventario.length) {
       sincronizarGitHub();
       console.log('GitHub vacio; inventario local subido a GitHub');
+    } else {
+      console.log('GitHub sin datos; inventario vacio');
     }
   });
 }
+
+setInterval(() => {
+  if (!ghActivo) return;
+  if (inventario.length) return;
+  console.log('Inventario vacio; reintentando carga desde GitHub');
+  cargarDesdeGitHub();
+}, 60000);
 
 function leerCuerpo(req) {
   return new Promise((resolve, reject) => {
