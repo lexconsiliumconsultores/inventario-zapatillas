@@ -222,6 +222,10 @@ body {
   justify-content: center;
 }
 
+.tienda-overlay[hidden] {
+  display: none;
+}
+
 .tienda-modal {
   background: #fff;
   border-radius: 16px 16px 0 0;
