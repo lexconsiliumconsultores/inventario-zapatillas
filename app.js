@@ -24,6 +24,8 @@ let quitarFoto = false;
 
 const APP_VERSION = '1.0.2';
 
+document.getElementById('app-version').textContent = 'V' + APP_VERSION;
+
 (async () => {
   try {
     const res = await fetch('/version.json?t=' + Date.now());
