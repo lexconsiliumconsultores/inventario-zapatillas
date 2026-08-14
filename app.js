@@ -22,6 +22,24 @@ let itemBaja = null;
 let fotoPendiente = null;
 let quitarFoto = false;
 
+const APP_VERSION = '1.0.1';
+
+(async () => {
+  try {
+    const res = await fetch('/version.json?t=' + Date.now());
+    if (!res.ok) return;
+    const meta = await res.json();
+    if (meta.version && meta.version !== APP_VERSION) {
+      const aviso = document.getElementById('aviso-act');
+      const nota = document.getElementById('aviso-nota');
+      const link = document.getElementById('aviso-descargar');
+      if (nota) nota.textContent = meta.nota || '';
+      if (link && meta.apk) link.href = meta.apk;
+      if (aviso) aviso.hidden = false;
+    }
+  } catch (e) {}
+})();
+
 async function cargar() {
   const params = new URLSearchParams();
   if (temporada) params.set('temporada', temporada);
@@ -124,6 +142,10 @@ document.addEventListener('click', (e) => {
     e.preventDefault();
     cerrarModales();
   }
+});
+
+document.getElementById('aviso-cerrar') && document.getElementById('aviso-cerrar').addEventListener('click', () => {
+  document.getElementById('aviso-act').hidden = true;
 });
 
 document.addEventListener('keydown', (e) => {

@@ -324,6 +324,66 @@ tbody tr:hover {
   display: none !important;
 }
 
+/* Aviso de nueva versión */
+.aviso-act[hidden] {
+  display: none !important;
+}
+
+.aviso-act {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  animation: caer 0.3s ease;
+}
+
+@keyframes caer {
+  from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+.aviso-caja {
+  background: #0f172a;
+  color: #fff;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aviso-caja b {
+  font-size: 14px;
+}
+
+.aviso-caja > span {
+  font-size: 12px;
+  color: #c7d2fe;
+}
+
+.aviso-acciones {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.aviso-acciones .btn-cancelar {
+  background: transparent;
+  border: 1px solid #475569;
+  color: #cbd5e1;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
 .fondo {
   position: fixed;
   inset: 0;
