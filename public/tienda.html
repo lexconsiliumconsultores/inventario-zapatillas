@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#111827" />
+  <title>Velvet Store - Tienda</title>
+  <link rel="icon" href="/logo-velvet.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/tienda.css" />
+</head>
+<body>
+  <header class="tienda-header">
+    <div class="tienda-titulo">
+      <img src="/logo-velvet.png" alt="Velvet Store" class="tienda-logo" />
+      <div>
+        <h1>Velvet Store</h1>
+        <p>Pedidos por WhatsApp y despacho</p>
+      </div>
+    </div>
+    <button id="tienda-carrito-btn" class="carrito-btn" hidden>
+      Carrito <span id="carrito-count" class="carrito-count">0</span>
+    </button>
+  </header>
+
+  <nav class="tienda-filtros">
+    <div id="tienda-tabs" class="tienda-tabs"></div>
+    <input id="tienda-busqueda" type="search" placeholder="Buscar modelo, código o categoría..." />
+  </nav>
+
+  <main>
+    <div id="tienda-grid" class="tienda-grid"></div>
+    <div id="tienda-vacio" class="tienda-vacio" hidden>No hay productos disponibles.</div>
+  </main>
+
+  <section id="tienda-carrito" class="tienda-overlay" hidden>
+    <div class="tienda-modal">
+      <div class="tienda-modal-head">
+        <h2>Tu pedido</h2>
+        <button class="tienda-cerrar" data-cerrar-carrito>×</button>
+      </div>
+      <div id="tienda-carrito-items" class="carrito-items"></div>
+      <div class="carrito-total">Total: <b id="tienda-total">$0</b></div>
+      <form id="tienda-checkout" class="checkout-form">
+        <input id="tienda-cliente" type="text" placeholder="Tu nombre" required />
+        <input id="tienda-telefono" type="tel" placeholder="Tu teléfono" required />
+        <button type="submit" class="btn-primario-tienda">Confirmar pedido</button>
+        <p class="checkout-nota">Pago contra entrega. Te contactamos para coordinar.</p>
+      </form>
+      <div id="tienda-mensaje" class="tienda-mensaje" hidden></div>
+    </div>
+  </section>
+
+  <section id="tienda-ok" class="tienda-overlay" hidden>
+    <div class="tienda-modal tienda-modal-ok">
+      <h2>¡Pedido recibido!</h2>
+      <p id="tienda-ok-texto"></p>
+      <button type="button" class="btn-primario-tienda" data-cerrar-ok>Volver a la tienda</button>
+    </div>
+  </section>
+
+  <script src="/tienda.js"></script>
+</body>
+</html>

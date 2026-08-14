@@ -22,11 +22,16 @@ const DATA_FILE = path.join(DATA_DIR, 'inventario.json');
 
 const CONEXION_FILE = path.join(DATA_DIR, 'conexion.json');
 const GH_RUTA = 'inventario.json';
+const GH_RUTA_PEDIDOS = 'pedidos.json';
 
 let ghRepo = '';
 let ghToken = '';
 let ghActivo = false;
 let ghUrl = '';
+
+function ghUrlDe(ruta) {
+  return ghRepo ? `https://api.github.com/repos/${ghRepo}/contents/${ruta}` : '';
+}
 
 function cargarConfiguracion() {
   let cfg = {};
@@ -40,16 +45,17 @@ function cargarConfiguracion() {
   ghRepo = process.env.GH_SYNC_REPO || cfg.repo || '';
   ghToken = process.env.GH_SYNC_TOKEN || cfg.token || '';
   ghActivo = Boolean(ghRepo && ghToken);
-  ghUrl = ghRepo ? `https://api.github.com/repos/${ghRepo}/contents/${GH_RUTA}` : '';
+  ghUrl = ghUrlDe(GH_RUTA);
 }
 
-async function leerGitHub() {
+async function leerGitHubRuta(ruta) {
   if (!ghActivo) return null;
-  const res = await fetch(ghUrl, {
+  const url = ghUrlDe(ruta);
+  const res = await fetch(url, {
     headers: { Authorization: `Bearer ${ghToken}`, 'User-Agent': 'inventario-zapatillas', Accept: 'application/vnd.github+json' },
   });
   if (!res.ok) {
-    if (res.status !== 404) console.error('Lectura GitHub fallo:', res.status);
+    if (res.status !== 404) console.error(`Lectura GitHub fallo (${ruta}):`, res.status);
     return null;
   }
   const data = await res.json();
@@ -60,20 +66,25 @@ async function leerGitHub() {
   }
 }
 
-async function escribirGitHub(lista) {
+async function leerGitHub() {
+  return leerGitHubRuta(GH_RUTA);
+}
+
+async function escribirGitHubRuta(lista, ruta) {
   if (!ghActivo) return;
+  const url = ghUrlDe(ruta);
   const cabecera = { Authorization: `Bearer ${ghToken}`, 'User-Agent': 'inventario-zapatillas', Accept: 'application/vnd.github+json' };
   let sha;
   try {
-    const actual = await fetch(ghUrl, { headers: cabecera });
+    const actual = await fetch(url, { headers: cabecera });
     if (actual.status === 404) sha = undefined;
     else if (!actual.ok) {
       console.error('Sync: lectura previa', actual.status);
       return;
     } else sha = (await actual.json()).sha;
-    const body = { message: 'Actualizar inventario', content: Buffer.from(JSON.stringify(lista, null, 2)).toString('base64') };
+    const body = { message: 'Actualizar ' + ruta, content: Buffer.from(JSON.stringify(lista, null, 2)).toString('base64') };
     if (sha) body.sha = sha;
-    const res = await fetch(ghUrl, {
+    const res = await fetch(url, {
       method: 'PUT',
       headers: { ...cabecera, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -82,6 +93,10 @@ async function escribirGitHub(lista) {
   } catch (e) {
     console.error('Sync GitHub:', e.message);
   }
+}
+
+async function escribirGitHub(lista) {
+  return escribirGitHubRuta(lista, GH_RUTA);
 }
 
 async function cargarDesdeGitHub() {
@@ -104,6 +119,43 @@ function sincronizarGitHub() {
 }
 
 let inventario = [];
+
+const PEDIDOS_FILE = path.join(DATA_DIR, 'pedidos.json');
+let pedidos = [];
+
+function cargarPedidos() {
+  if (fs.existsSync(PEDIDOS_FILE)) {
+    try {
+      pedidos = JSON.parse(fs.readFileSync(PEDIDOS_FILE, 'utf8')) || [];
+    } catch (e) {
+      pedidos = [];
+    }
+  }
+}
+
+let colaSyncPedidos = Promise.resolve();
+function sincronizarPedidos() {
+  if (!ghActivo) return Promise.resolve();
+  const copia = JSON.parse(JSON.stringify(pedidos));
+  colaSyncPedidos = colaSyncPedidos.then(() => escribirGitHubRuta(copia, GH_RUTA_PEDIDOS)).catch((e) => console.error('Sync pedidos:', e.message));
+  return colaSyncPedidos;
+}
+
+function guardarPedidos() {
+  fs.writeFileSync(PEDIDOS_FILE, JSON.stringify(pedidos, null, 2));
+  sincronizarPedidos();
+}
+
+async function cargarPedidosDesdeGitHub() {
+  if (!ghActivo) return false;
+  const datos = await leerGitHubRuta(GH_RUTA_PEDIDOS);
+  if (datos && Array.isArray(datos)) {
+    pedidos = datos;
+    fs.writeFileSync(PEDIDOS_FILE, JSON.stringify(pedidos, null, 2));
+    return true;
+  }
+  return false;
+}
 
 function cargarJSON() {
   if (fs.existsSync(DATA_FILE)) {
@@ -139,6 +191,7 @@ function semillarDesdeExcel() {
 }
 
 cargarJSON();
+cargarPedidos();
 migrarFotos();
 cargarConfiguracion();
 if (!inventario.length) {
@@ -168,6 +221,9 @@ if (ghActivo) {
     } else {
       console.log('GitHub sin datos; inventario vacio');
     }
+  });
+  cargarPedidosDesdeGitHub().then((ok) => {
+    if (ok) console.log('Pedidos cargados desde GitHub');
   });
 }
 
@@ -249,6 +305,18 @@ function crearServidor() {
     return servirArchivo(res, path.join(__dirname, 'public', 'app.js'), 'application/javascript; charset=utf-8');
   }
 
+  if (req.method === 'GET' && url.pathname === '/tienda') {
+    return servirArchivo(res, path.join(__dirname, 'public', 'tienda.html'), 'text/html; charset=utf-8');
+  }
+
+  if (req.method === 'GET' && url.pathname === '/tienda.js') {
+    return servirArchivo(res, path.join(__dirname, 'public', 'tienda.js'), 'application/javascript; charset=utf-8');
+  }
+
+  if (req.method === 'GET' && url.pathname === '/tienda.css') {
+    return servirArchivo(res, path.join(__dirname, 'public', 'tienda.css'), 'text/css; charset=utf-8');
+  }
+
   if (req.method === 'GET' && ['/manifest.json', '/sw.js', '/logo-velvet.png', '/logo-velvet-192.png', '/logo-maskable-512.png', '/version.json'].includes(url.pathname)) {
     const tipos = { json: 'application/manifest+json; charset=utf-8', js: 'application/javascript; charset=utf-8', png: 'image/png' };
     return servirArchivo(res, path.join(__dirname, 'public', url.pathname.slice(1)), tipos[path.extname(url.pathname).slice(1)] || 'application/octet-stream');
@@ -265,6 +333,35 @@ function crearServidor() {
     const mime = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp' };
     const tipo = mime[path.extname(archivo).toLowerCase()] || 'application/octet-stream';
     return servirArchivo(res, archivo, tipo);
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/tienda/catalogo') {
+    const temporada = url.searchParams.get('temporada') || '';
+    const q = (url.searchParams.get('q') || '').toLowerCase();
+    let datos = inventario.filter((i) => totalStock(i.tallas) > 0);
+    if (temporada && temporada !== 'Todos') datos = datos.filter((i) => i.temporada === temporada);
+    if (q) {
+      datos = datos.filter(
+        (i) =>
+          String(i.codigo).toLowerCase().includes(q) ||
+          String(i.producto).toLowerCase().includes(q) ||
+          String(i.categoria).toLowerCase().includes(q)
+      );
+    }
+    const limpio = datos.map((i) => ({
+      id: i.id,
+      temporada: i.temporada,
+      codigo: i.codigo,
+      producto: i.producto,
+      categoria: i.categoria,
+      genero: i.genero,
+      precio: i.precio,
+      foto: i.foto,
+      tallas: (i.tallas || [])
+        .filter((t) => Number(t.stock) > 0)
+        .map((t) => ({ talla: t.talla, stock: Number(t.stock) })),
+    }));
+    return enviar(res, 200, limpio);
   }
 
   if (req.method === 'GET' && url.pathname === '/api/inventario') {
@@ -562,6 +659,79 @@ function crearServidor() {
     fs.rmSync(CONEXION_FILE, { force: true });
     cargarConfiguracion();
     return enviar(res, 200, { ok: true, activo: false });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/pedidos') {
+    const lista = [...pedidos].sort((a, b) => b.id - a.id);
+    return enviar(res, 200, lista);
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/pedidos/pendientes') {
+    const pendientes = pedidos.filter((p) => !p.despachado).length;
+    return enviar(res, 200, { pendientes });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/pedidos') {
+    try {
+      const item = await leerCuerpo(req);
+      const cliente = String(item.cliente || '').trim();
+      const telefono = String(item.telefono || '').trim();
+      const lineas = Array.isArray(item.lineas) ? item.lineas : [];
+      if (!cliente) return enviar(res, 400, { error: 'Indica tu nombre' });
+      if (!telefono) return enviar(res, 400, { error: 'Indica tu telefono' });
+      if (!lineas.length) return enviar(res, 400, { error: 'El carrito esta vacio' });
+      const detalle = [];
+      for (const linea of lineas) {
+        const id = Number(linea.id);
+        const talla = String(linea.talla || '').trim();
+        const cantidad = Number(linea.cantidad) || 1;
+        const prod = inventario.find((i) => i.id === id);
+        if (!prod) return enviar(res, 400, { error: 'Un producto ya no existe' });
+        const variante = (prod.tallas || []).find((v) => String(v.talla) === talla);
+        if (!variante) return enviar(res, 400, { error: `Talla ${talla} no existe para ${prod.producto}` });
+        if (Number(variante.stock) < cantidad) {
+          return enviar(res, 400, { error: `Solo quedan ${variante.stock} de ${prod.producto} (talla ${talla})` });
+        }
+        variante.stock -= cantidad;
+        detalle.push({
+          producto: prod.producto,
+          codigo: prod.codigo,
+          temporada: prod.temporada,
+          talla,
+          cantidad,
+          precio: Number(prod.precio) || 0,
+          subtotal: (Number(prod.precio) || 0) * cantidad,
+        });
+      }
+      const total = detalle.reduce((s, l) => s + l.subtotal, 0);
+      const id = pedidos.reduce((max, p) => Math.max(max, p.id || 0), 0) + 1;
+      const pedido = {
+        id,
+        fecha: new Date().toISOString(),
+        cliente,
+        telefono,
+        lineas: detalle,
+        total,
+        estado: 'pendiente',
+        despachado: false,
+      };
+      pedidos.push(pedido);
+      guardar();
+      guardarPedidos();
+      return enviar(res, 200, { ok: true, pedido });
+    } catch (e) {
+      return enviar(res, 400, { error: 'JSON invalido' });
+    }
+  }
+
+  if (req.method === 'PUT' && url.pathname.match(/^\/api\/pedidos\/\d+\/despachar$/)) {
+    const id = parseInt(url.pathname.split('/')[3], 10);
+    const pedido = pedidos.find((p) => p.id === id);
+    if (!pedido) return enviar(res, 404, { error: 'Pedido no encontrado' });
+    pedido.estado = 'despachado';
+    pedido.despachado = true;
+    guardarPedidos();
+    return enviar(res, 200, { ok: true, pedido });
   }
 
   res.writeHead(404);
