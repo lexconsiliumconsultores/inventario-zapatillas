@@ -479,6 +479,34 @@ document.getElementById('archivo-excel').addEventListener('change', async (e) =>
   lector.readAsDataURL(archivo);
 });
 
+document.getElementById('btn-importar').addEventListener('click', () => {
+  document.getElementById('archivo-json').click();
+});
+
+document.getElementById('archivo-json').addEventListener('change', async (e) => {
+  const archivo = e.target.files[0];
+  e.target.value = '';
+  if (!archivo) return;
+  if (!confirm(`Esto reemplazará TODO el inventario actual con "${archivo.name}". ¿Continuar?`)) return;
+  const lector = new FileReader();
+  lector.onload = async () => {
+    const res = await fetch('/api/inventario/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base64: lector.result.split(',')[1] }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    alert(`Inventario importado: ${data.inventario.length} productos.`);
+    cargar();
+    cargarSistema();
+  };
+  lector.readAsDataURL(archivo);
+});
+
 cargar();
 cargarSistema();
 actualizarEstadoSync();
