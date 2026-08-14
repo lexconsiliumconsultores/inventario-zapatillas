@@ -19,7 +19,21 @@ Abrir `http://localhost:3000`
 
 Al primer arranque busca un archivo `.xlsx` en la carpeta del proyecto o en `Downloads` (o fíjalo con la variable de entorno `EXCEL_FILE`). También puede empezar vacío y usar el botón **"Recargar desde Excel"**.
 
-## Deploy en línea (Render)
+## Deploy en línea
+
+### Railway (recomendado)
+
+1. Sube este repo a GitHub.
+2. En [railway.com](https://railway.com) → **New Project** → **Deploy from GitHub repo** → conecta el repo.
+3. **Renombra el servicio a `velvet-store`** (Settings → Service → Name, o clic derecho sobre el servicio → Rename). Así la URL queda `https://velvet-store-xxxx.up.railway.app`.
+4. Crea un **Volume** y móntalo en `/data` (1 GB es suficiente). Los datos persisten ahí.
+5. Variables de entorno:
+   - `DATA_DIR` → `/data`
+   - `NODE_VERSION` → `20`
+6. Build y start ya quedan configurados en `railway.json` (`npm install` / `npm start`).
+7. Listo. La URL `https://velvet-store-xxxx.up.railway.app` es tu PWA instalable.
+
+### Render (alternativa)
 
 1. Sube este repo a GitHub.
 2. En [render.com](https://render.com) → **New** → **Web Service** → conecta el repo.

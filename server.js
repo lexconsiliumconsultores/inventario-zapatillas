@@ -495,6 +495,24 @@ function crearServidor() {
     }
   }
 
+  if (req.method === 'POST' && url.pathname === '/api/inventario/import') {
+    try {
+      const item = await leerCuerpo(req);
+      let lista = item.base64 ? JSON.parse(Buffer.from(item.base64, 'base64').toString('utf8')) : item.inventario;
+      if (!Array.isArray(lista) || !lista.length) return enviar(res, 400, { error: 'Archivo sin productos validos' });
+      if (lista.length > 2000) return enviar(res, 400, { error: 'Demasiados productos' });
+      inventario = lista.map((p, i) => ({
+        id: i + 1,
+        ...p,
+        tallas: (p.tallas || []).map((t) => ({ talla: String(t.talla).trim(), stock: Number(t.stock) || 0 })).filter((t) => t.talla),
+      }));
+      guardar();
+      return enviar(res, 200, { ok: true, inventario });
+    } catch (e) {
+      return enviar(res, 400, { error: 'JSON invalido' });
+    }
+  }
+
   if (req.method === 'GET' && url.pathname === '/api/conexion') {
     return enviar(res, 200, {
       activo: ghActivo,
