@@ -35,9 +35,28 @@ document.getElementById('app-version').textContent = 'V' + APP_VERSION;
       const aviso = document.getElementById('aviso-act');
       const nota = document.getElementById('aviso-nota');
       const link = document.getElementById('aviso-descargar');
+      const boton = document.getElementById('aviso-boton');
       if (nota) nota.textContent = meta.nota || '';
       if (link && meta.apk) link.href = meta.apk;
       if (aviso) aviso.hidden = false;
+      if (boton) {
+        boton.textContent = 'Actualizar ahora';
+        boton.onclick = async () => {
+          if (window.Capacitor && Capacitor.isNativePlatform()) {
+            boton.textContent = 'Descargando...';
+            try {
+              const AppUpdater = Capacitor.Plugins.AppUpdater;
+              await AppUpdater.instalar({ url: new URL(meta.apk, location.origin).href });
+              boton.textContent = 'Instalando...';
+            } catch (e) {
+              boton.textContent = 'Actualizar ahora';
+              alert('No se pudo actualizar: ' + (e.message || e));
+            }
+          } else {
+            window.location.href = link.href;
+          }
+        };
+      }
     }
   } catch (e) {}
 })();
