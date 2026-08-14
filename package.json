@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "iconos": "node scripts/generar-iconos.js",
+    "comprimir:fotos": "node scripts/comprimir-fotos.js",
     "android:sync": "npx cap sync android",
     "android:build": "cd android && gradlew.bat assembleDebug"
   },
@@ -13,12 +14,12 @@
     "node": ">=18"
   },
   "dependencies": {
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "jimp": "^1.6.1"
   },
   "devDependencies": {
     "@capacitor/android": "^8.5.0",
     "@capacitor/cli": "^8.5.0",
-    "@capacitor/core": "^8.5.0",
-    "jimp": "^1.6.1"
+    "@capacitor/core": "^8.5.0"
   }
 }
