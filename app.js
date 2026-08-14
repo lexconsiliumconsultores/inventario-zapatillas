@@ -13,6 +13,10 @@ const modalForm = document.getElementById('modal-form');
 const modalVenta = document.getElementById('modal-venta');
 const modalAlta = document.getElementById('modal-alta');
 const modalBaja = document.getElementById('modal-baja');
+const btnPedidos = document.getElementById('btn-pedidos');
+const pedidosBadge = document.getElementById('pedidos-badge');
+const modalPedidos = document.getElementById('modal-pedidos');
+const pedidosLista = document.getElementById('pedidos-lista');
 
 let inventario = [];
 let temporada = '';
@@ -60,6 +64,75 @@ document.getElementById('app-version').textContent = 'V' + APP_VERSION;
     }
   } catch (e) {}
 })();
+
+async function cargarPedidosPendientes() {
+  try {
+    const res = await fetch('/api/pedidos/pendientes?t=' + Date.now());
+    if (!res.ok) return;
+    const data = await res.json();
+    const n = Number(data.pendientes) || 0;
+    btnPedidos.hidden = false;
+    pedidosBadge.hidden = n === 0;
+    pedidosBadge.textContent = n;
+  } catch (e) {}
+}
+
+async function verPedidos() {
+  try {
+    const res = await fetch('/api/pedidos?t=' + Date.now() + Math.random());
+    if (!res.ok) {
+      alert('No se pudieron cargar los pedidos.');
+      return;
+    }
+    const lista = await res.json();
+    pedidosLista.innerHTML = lista.length
+      ? lista
+          .map((p) => {
+            const lineas = p.lineas
+              .map((l) => `<li>${esc(l.producto)} (${esc(l.codigo || '')}) · Talla ${esc(l.talla)} × ${l.cantidad} · <b>$${Number(l.subtotal).toLocaleString('es-CL')}</b></li>`)
+              .join('');
+            const fecha = new Date(p.fecha).toLocaleString('es-CL');
+            return `<div class="pedido ${p.despachado ? 'despachado' : ''}">
+              <div class="pedido-head">
+                <b>Pedido #${p.id}</b>
+                <span class="pedido-estado">${p.despachado ? 'Despachado' : 'Pendiente'}</span>
+              </div>
+              <div class="pedido-info">
+                <div><b>${esc(p.cliente)}</b> · ${esc(p.telefono)}</div>
+                <div class="pedido-fecha">${fecha}</div>
+                <ul>${lineas}</ul>
+                <div class="pedido-total">Total: <b>$${Number(p.total).toLocaleString('es-CL')}</b></div>
+              </div>
+              ${!p.despachado ? `<button type="button" class="btn-primario chico" data-despachar="${p.id}">Marcar despachado</button>` : ''}
+            </div>`;
+          })
+          .join('')
+      : '<p class="vacio">No hay pedidos todavía.</p>';
+    modalPedidos.hidden = false;
+  } catch (e) {
+    alert('Error al cargar pedidos.');
+  }
+}
+
+pedidosLista.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-despachar]');
+  if (!btn) return;
+  const id = btn.dataset.despachar;
+  try {
+    const res = await fetch(`/api/pedidos/${id}/despachar`, { method: 'PUT' });
+    const data = await res.json();
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+    await cargarPedidosPendientes();
+    await verPedidos();
+  } catch (err) {
+    alert('No se pudo actualizar el pedido.');
+  }
+});
+
+btnPedidos.addEventListener('click', verPedidos);
 
 async function cargar() {
   const params = new URLSearchParams();
@@ -524,6 +597,7 @@ document.getElementById('archivo-excel').addEventListener('change', async (e) =>
 
 cargar();
 cargarSistema();
+cargarPedidosPendientes();
 
 const refrescar = document.getElementById('refrescar');
 const refrescarTexto = document.getElementById('refrescar-texto');
@@ -566,7 +640,7 @@ addEventListener('touchend', async (e) => {
     refrescando = true;
     mostrarRefrescar('Actualizando...', true);
     navigator.vibrate && navigator.vibrate(50);
-    await Promise.all([cargar(), cargarSistema()]);
+    await Promise.all([cargar(), cargarSistema(), cargarPedidosPendientes()]);
     refrescando = false;
     mostrarRefrescar('', false);
   } else {
@@ -580,6 +654,7 @@ document.addEventListener('visibilitychange', () => {
     ultimaActiva = Date.now();
     cargar();
     cargarSistema();
+    cargarPedidosPendientes();
   }
 });
 window.addEventListener('focus', () => {
@@ -587,6 +662,7 @@ window.addEventListener('focus', () => {
     ultimaActiva = Date.now();
     cargar();
     cargarSistema();
+    cargarPedidosPendientes();
   }
 });
 
@@ -594,5 +670,6 @@ setInterval(() => {
   if (document.visibilityState === 'visible') {
     cargar();
     cargarSistema();
+    cargarPedidosPendientes();
   }
 }, 30000);

@@ -22,6 +22,9 @@
       </div>
     </div>
     <div class="totales" id="totales"></div>
+    <button class="btn-pedidos" id="btn-pedidos" hidden>
+      Pedidos <span class="pedidos-badge" id="pedidos-badge" hidden>0</span>
+    </button>
   </header>
 
   <div class="aviso-act" id="aviso-act" hidden>
@@ -194,6 +197,16 @@
           <button type="button" class="btn-cancelar" data-cerrar="modal-baja">Cancelar</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <div class="modal fondo" id="modal-pedidos" hidden>
+    <div class="modal-caja modal-caja-ancha">
+      <div class="pedidos-head">
+        <h2>Pedidos de la tienda</h2>
+        <button type="button" class="btn-cancelar chico" data-cerrar="modal-pedidos">Cerrar</button>
+      </div>
+      <div id="pedidos-lista" class="pedidos-lista"></div>
     </div>
   </div>
 
