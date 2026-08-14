@@ -481,22 +481,43 @@ document.getElementById('archivo-excel').addEventListener('change', async (e) =>
 
 cargar();
 cargarSistema();
-actualizarEstadoSync();
 
-const syncEstado = document.getElementById('sync-estado');
-
-async function actualizarEstadoSync() {
-  try {
-    const res = await fetch('/api/conexion');
-    const data = await res.json();
-    if (data.activo) {
-      syncEstado.textContent = 'Sincronizando automaticamente con ' + (data.repo || 'GitHub');
-      syncEstado.className = 'sync-estado on';
-    } else {
-      syncEstado.textContent = '';
-      syncEstado.className = 'sync-estado';
-    }
-  } catch (e) {
-    syncEstado.textContent = 'Sin conexion al servidor';
+let tocando = 0;
+let desdeY = 0;
+addEventListener('touchstart', (e) => {
+  if (window.scrollY <= 0) {
+    tocando = 1;
+    desdeY = e.touches[0].clientY;
   }
-}
+}, { passive: true });
+
+addEventListener('touchmove', (e) => {
+  if (tocando && window.scrollY <= 0 && e.touches[0].clientY - desdeY > 90) {
+    tocando = 0;
+    navigator.vibrate && navigator.vibrate(50);
+    cargar();
+  }
+}, { passive: true });
+
+let ultimaActiva = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && Date.now() - ultimaActiva > 15000) {
+    ultimaActiva = Date.now();
+    cargar();
+    cargarSistema();
+  }
+});
+window.addEventListener('focus', () => {
+  if (Date.now() - ultimaActiva > 15000) {
+    ultimaActiva = Date.now();
+    cargar();
+    cargarSistema();
+  }
+});
+
+setInterval(() => {
+  if (document.visibilityState === 'visible') {
+    cargar();
+    cargarSistema();
+  }
+}, 30000);
