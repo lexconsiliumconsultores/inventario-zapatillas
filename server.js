@@ -155,6 +155,16 @@ if (ghActivo) {
     } else if (inventario.length) {
       sincronizarGitHub();
       console.log('GitHub vacio; inventario local subido a GitHub');
+    } else if (fs.existsSync(path.join(__dirname, 'inventario-backup-railway.json'))) {
+      const backup = JSON.parse(fs.readFileSync(path.join(__dirname, 'inventario-backup-railway.json'), 'utf8'));
+      if (backup && Array.isArray(backup) && backup.length) {
+        inventario = backup.map((p, i) => ({ id: i + 1, ...p }));
+        fs.writeFileSync(DATA_FILE, JSON.stringify(inventario, null, 2));
+        sincronizarGitHub();
+        console.log('Sin datos; inventario restaurado desde backup y subido a GitHub');
+      } else {
+        console.log('GitHub sin datos; inventario vacio');
+      }
     } else {
       console.log('GitHub sin datos; inventario vacio');
     }
