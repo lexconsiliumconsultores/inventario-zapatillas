@@ -299,11 +299,14 @@ body {
   gap: 8px;
 }
 
-.checkout-form input {
+.checkout-form input,
+.checkout-form textarea {
   padding: 12px 14px;
   border: 1px solid #d1d5db;
   border-radius: 10px;
   font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
 }
 
 .btn-primario-tienda {

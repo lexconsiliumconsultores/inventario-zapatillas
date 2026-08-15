@@ -26,7 +26,7 @@ let itemBaja = null;
 let fotoPendiente = null;
 let quitarFoto = false;
 
-const APP_VERSION = '1.0.3';
+const APP_VERSION = '1.0.4';
 
 document.getElementById('app-version').textContent = 'V' + APP_VERSION;
 
@@ -95,10 +95,15 @@ async function verPedidos() {
             return `<div class="pedido ${p.despachado ? 'despachado' : ''}">
               <div class="pedido-head">
                 <b>Pedido #${p.id}</b>
-                <span class="pedido-estado">${p.despachado ? 'Despachado' : 'Pendiente'}</span>
+                <span class="pedido-acciones">
+                  <span class="pedido-estado">${p.despachado ? 'Despachado' : 'Pendiente'}</span>
+                  <button type="button" class="pedido-eliminar" data-eliminar="${p.id}" title="Eliminar pedido" aria-label="Eliminar pedido">×</button>
+                </span>
               </div>
               <div class="pedido-info">
                 <div><b>${esc(p.cliente)}</b> · ${esc(p.telefono)}</div>
+                ${p.direccion ? `<div class="pedido-fecha">Dirección: ${esc(p.direccion)}</div>` : ''}
+                ${p.observacion ? `<div class="pedido-fecha">Observaciones: ${esc(p.observacion)}</div>` : ''}
                 <div class="pedido-fecha">${fecha}</div>
                 <ul>${lineas}</ul>
                 <div class="pedido-total">Total: <b>$${Number(p.total).toLocaleString('es-CL')}</b></div>
@@ -115,11 +120,29 @@ async function verPedidos() {
 }
 
 pedidosLista.addEventListener('click', async (e) => {
-  const btn = e.target.closest('[data-despachar]');
-  if (!btn) return;
-  const id = btn.dataset.despachar;
+  const btnDespachar = e.target.closest('[data-despachar]');
+  if (btnDespachar) {
+    const id = btnDespachar.dataset.despachar;
+    try {
+      const res = await fetch(`/api/pedidos/${id}/despachar`, { method: 'PUT' });
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+      await cargarPedidosPendientes();
+      await verPedidos();
+    } catch (err) {
+      alert('No se pudo actualizar el pedido.');
+    }
+    return;
+  }
+  const btnEliminar = e.target.closest('[data-eliminar]');
+  if (!btnEliminar) return;
+  const id = btnEliminar.dataset.eliminar;
+  if (!confirm('¿Eliminar este pedido? Se restaurará el stock de sus productos.')) return;
   try {
-    const res = await fetch(`/api/pedidos/${id}/despachar`, { method: 'PUT' });
+    const res = await fetch(`/api/pedidos/${id}`, { method: 'DELETE' });
     const data = await res.json();
     if (data.error) {
       alert(data.error);
@@ -128,7 +151,7 @@ pedidosLista.addEventListener('click', async (e) => {
     await cargarPedidosPendientes();
     await verPedidos();
   } catch (err) {
-    alert('No se pudo actualizar el pedido.');
+    alert('No se pudo eliminar el pedido.');
   }
 });
 
