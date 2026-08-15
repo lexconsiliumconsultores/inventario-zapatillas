@@ -282,6 +282,37 @@ body {
   color: #6b7280;
 }
 
+.carrito-item-acciones {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.carrito-item .c-subtotal {
+  font-weight: 700;
+}
+
+.carrito-quitar {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.carrito-quitar:hover {
+  background: #dc2626;
+  color: #fff;
+}
+
 .carrito-total {
   text-align: right;
   margin: 10px 0;

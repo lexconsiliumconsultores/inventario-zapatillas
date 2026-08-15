@@ -116,7 +116,7 @@ busqueda.addEventListener('input', () => {
   busqueda._t = setTimeout(cargar, 300);
 });
 
-carritoBtn.addEventListener('click', () => {
+function pintarItemsCarrito() {
   carritoItems.innerHTML = '';
   const items = Object.values(carrito);
   if (!items.length) {
@@ -131,12 +131,28 @@ carritoBtn.addEventListener('click', () => {
         <b>${esc(i.producto)}</b><br>
         <span class="c-cantidad">Talla ${esc(i.talla)} × ${i.cantidad}</span>
       </div>
-      <div>${formatearPrecio(i.subtotal)}</div>
+      <div class="carrito-item-acciones">
+        <span class="c-subtotal">${formatearPrecio(i.subtotal)}</span>
+        <button type="button" class="carrito-quitar" data-quitar="${i.id}|${esc(i.talla)}" aria-label="Quitar del carrito" title="Quitar del carrito">×</button>
+      </div>
     `;
     carritoItems.appendChild(fila);
   });
   mensajeEl.hidden = true;
-  overlayCarrito.hidden = false;
+}
+
+carritoBtn.addEventListener('click', () => {
+  pintarItemsCarrito();
+  overlayCarrito.hidden = Object.keys(carrito).length === 0;
+});
+
+carritoItems.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-quitar]');
+  if (!btn) return;
+  delete carrito[btn.dataset.quitar];
+  pintarCarrito();
+  pintarItemsCarrito();
+  if (!Object.keys(carrito).length) overlayCarrito.hidden = true;
 });
 
 document.addEventListener('click', (e) => {
