@@ -153,6 +153,8 @@ formCheckout.addEventListener('submit', async (e) => {
   e.preventDefault();
   const cliente = document.getElementById('tienda-cliente').value.trim();
   const telefono = document.getElementById('tienda-telefono').value.trim();
+  const direccion = document.getElementById('tienda-direccion').value.trim();
+  const observacion = document.getElementById('tienda-observacion').value.trim();
   const lineas = Object.values(carrito).map((i) => ({
     id: i.id,
     talla: i.talla,
@@ -166,7 +168,7 @@ formCheckout.addEventListener('submit', async (e) => {
     const res = await fetch('/api/pedidos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cliente, telefono, lineas }),
+      body: JSON.stringify({ cliente, telefono, direccion, observacion, lineas }),
     });
     const data = await res.json();
     if (data.error) {
@@ -175,7 +177,11 @@ formCheckout.addEventListener('submit', async (e) => {
       return;
     }
     ultimoPedido = data.pedido;
-    okTexto.textContent = `¡Gracias ${cliente}! Recibimos tu pedido N° ${data.pedido.id} por $${Number(data.pedido.total).toLocaleString('es-CL')}. Te contactamos al ${telefono} para coordinar la entrega.`;
+    const dest =
+      direccion || observacion
+        ? ` (${[direccion, observacion].filter(Boolean).join(' · ')})`
+        : '';
+    okTexto.textContent = `¡Gracias ${cliente}! Recibimos tu pedido N° ${data.pedido.id} por $${Number(data.pedido.total).toLocaleString('es-CL')}. Te contactamos al ${telefono}${dest} para coordinar la entrega.`;
     overlayCarrito.hidden = true;
     overlayOk.hidden = false;
     formCheckout.reset();

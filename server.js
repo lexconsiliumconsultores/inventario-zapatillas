@@ -676,9 +676,12 @@ function crearServidor() {
       const item = await leerCuerpo(req);
       const cliente = String(item.cliente || '').trim();
       const telefono = String(item.telefono || '').trim();
+      const direccion = String(item.direccion || '').trim();
+      const observacion = String(item.observacion || '').trim();
       const lineas = Array.isArray(item.lineas) ? item.lineas : [];
       if (!cliente) return enviar(res, 400, { error: 'Indica tu nombre' });
       if (!telefono) return enviar(res, 400, { error: 'Indica tu telefono' });
+      if (!direccion) return enviar(res, 400, { error: 'Indica tu direccion' });
       if (!lineas.length) return enviar(res, 400, { error: 'El carrito esta vacio' });
       const detalle = [];
       for (const linea of lineas) {
@@ -711,6 +714,8 @@ function crearServidor() {
         fecha: new Date().toISOString(),
         cliente,
         telefono,
+        direccion,
+        observacion,
         lineas: detalle,
         total,
         estado: 'pendiente',
