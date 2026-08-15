@@ -261,6 +261,7 @@ function cerrarModales() {
   modalVenta.hidden = true;
   modalAlta.hidden = true;
   modalBaja.hidden = true;
+  modalPedidos.hidden = true;
 }
 
 document.addEventListener('click', (e) => {
