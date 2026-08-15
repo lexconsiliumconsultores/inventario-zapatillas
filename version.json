@@ -1,5 +1,5 @@
 {
-  "version": "1.0.4",
+  "version": "1.0.5",
   "apk": "/velvet-store.apk",
-  "nota": "V 1.0.4: botón X para eliminar pedidos, dirección y observaciones en el pedido"
+  "nota": "V 1.0.5: boton X para quitar productos del carrito y correccion de cierre de pedidos"
 }
