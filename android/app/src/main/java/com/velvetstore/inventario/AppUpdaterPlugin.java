@@ -1,6 +1,7 @@
 package com.velvetstore.inventario;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import androidx.core.content.FileProvider;
@@ -19,6 +20,17 @@ import java.net.URL;
 
 @CapacitorPlugin(name = "AppUpdater")
 public class AppUpdaterPlugin extends Plugin {
+
+    @PluginMethod
+    public void version(PluginCall call) {
+        try {
+            String versionName = getContext().getPackageManager()
+                    .getPackageInfo(getContext().getPackageName(), 0).versionName;
+            call.resolve(new JSObject().put("version", versionName != null ? versionName : "0"));
+        } catch (PackageManager.NameNotFoundException e) {
+            call.resolve(new JSObject().put("version", "0"));
+        }
+    }
 
     @PluginMethod
     public void instalar(PluginCall call) {

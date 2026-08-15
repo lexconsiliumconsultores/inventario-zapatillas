@@ -32,10 +32,20 @@ document.getElementById('app-version').textContent = 'V' + APP_VERSION;
 
 (async () => {
   try {
+    let instalada = APP_VERSION;
+    if (window.Capacitor && Capacitor.isNativePlatform() && Capacitor.Plugins.AppUpdater) {
+      try {
+        const v = await Capacitor.Plugins.AppUpdater.version();
+        if (v && v.version) instalada = v.version;
+        else instalada = '';
+      } catch (e) {
+        instalada = '';
+      }
+    }
     const res = await fetch('/version.json?t=' + Date.now());
     if (!res.ok) return;
     const meta = await res.json();
-    if (meta.version && meta.version !== APP_VERSION) {
+    if (meta.version && meta.version !== instalada) {
       const aviso = document.getElementById('aviso-act');
       const nota = document.getElementById('aviso-nota');
       const link = document.getElementById('aviso-descargar');
