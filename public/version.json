@@ -1,5 +1,5 @@
 {
-  "version": "1.0.6",
+  "version": "1.0.7",
   "apk": "/velvet-store.apk",
-  "nota": "V 1.0.6: ver foto de zapatilla en grande con zoom (pellizco, + y -) y cerrar con X"
+  "nota": "V 1.0.7: panel admin protegido con usuario y contraseña + foto de zapatilla con zoom en la tienda"
 }
