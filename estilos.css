@@ -119,6 +119,23 @@ header h1 {
   text-align: center;
 }
 
+.btn-salir {
+  background: transparent;
+  color: #fca5a5;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-salir:hover {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
 .modal-caja-ancha {
   width: 560px;
   max-width: 94vw;
