@@ -7,7 +7,7 @@ const { cargarDesdeExcel, buscarArchivoExcel } = require('./excel');
 const PORT = process.env.PORT || 3000;
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
-const sesiones = new Map();
+const SESSION_SECRET = process.env.SESSION_SECRET || 'velvet-store-session-secret';
 
 const DATA_DIR_PEDIDO = process.env.DATA_DIR || __dirname;
 let DATA_DIR = DATA_DIR_PEDIDO;
@@ -267,16 +267,29 @@ function cookieDe(req, nombre) {
   return '';
 }
 
-function estaAutenticado(req) {
-  const tok = cookieDe(req, 'velvet_admin');
-  if (!tok) return false;
-  const expira = sesiones.get(tok);
-  if (!expira) return false;
-  if (Date.now() > expira) {
-    sesiones.delete(tok);
-    return false;
+function firmarCookie(contenido) {
+  const datos = Buffer.from(JSON.stringify(contenido)).toString('base64url');
+  const firma = crypto.createHmac('sha256', SESSION_SECRET).update(datos).digest('base64url');
+  return datos + '.' + firma;
+}
+
+function verificarCookie(tok) {
+  const partes = String(tok || '').split('.');
+  if (partes.length !== 2) return null;
+  const [datos, firma] = partes;
+  const esperada = crypto.createHmac('sha256', SESSION_SECRET).update(datos).digest('base64url');
+  if (esperada !== firma) return null;
+  try {
+    const contenido = JSON.parse(Buffer.from(datos, 'base64url').toString('utf8'));
+    if (Date.now() > (contenido.exp || 0)) return null;
+    return contenido;
+  } catch (e) {
+    return null;
   }
-  return true;
+}
+
+function estaAutenticado(req) {
+  return Boolean(verificarCookie(cookieDe(req, 'velvet_admin')));
 }
 
 function rutaAdminProtegida(req, url) {
@@ -336,8 +349,7 @@ function crearServidor() {
     if (!ADMIN_PASSWORD) return enviar(res, 503, { error: 'La proteccion no esta configurada en el servidor' });
     const cuerpo = await leerCuerpo(req).catch(() => ({}));
     if (String(cuerpo.password || '') !== ADMIN_PASSWORD) return enviar(res, 401, { error: 'Contraseña incorrecta' });
-    const token = crypto.randomBytes(24).toString('hex');
-    sesiones.set(token, Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const token = firmarCookie({ exp: Date.now() + 7 * 24 * 60 * 60 * 1000 });
     const https = req.headers['x-forwarded-proto'] === 'https';
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8',
@@ -347,8 +359,6 @@ function crearServidor() {
   }
 
   if (req.method === 'POST' && url.pathname === '/api/logout') {
-    const tok = cookieDe(req, 'velvet_admin');
-    if (tok) sesiones.delete(tok);
     res.writeHead(200, {
       'Content-Type': 'application/json; charset=utf-8',
       'Set-Cookie': 'velvet_admin=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax',
