@@ -98,8 +98,12 @@ function agregarAlCarrito(id, talla) {
 
 grid.addEventListener('click', (e) => {
   const btn = e.target.closest('.talla-btn');
-  if (!btn) return;
-  agregarAlCarrito(btn.dataset.id, btn.dataset.talla);
+  if (btn) {
+    agregarAlCarrito(btn.dataset.id, btn.dataset.talla);
+    return;
+  }
+  const foto = e.target.closest('.tarjeta-foto');
+  if (foto) abrirFoto(foto.src, foto.alt);
 });
 
 tabs.addEventListener('click', (e) => {
@@ -215,6 +219,119 @@ function esc(texto) {
   div.textContent = texto;
   return div.innerHTML;
 }
+
+const fotoOverlay = document.getElementById('tienda-foto');
+const fotoViewport = document.getElementById('foto-viewport');
+const fotoImg = document.getElementById('foto-img');
+const fotoMas = document.getElementById('foto-mas');
+const fotoMenos = document.getElementById('foto-menos');
+const fotoNivel = document.getElementById('foto-nivel');
+const fotoZoom = { valor: 1, panX: 0, panY: 0 };
+let fotoPunt = new Map();
+let fotoPinchInicio = 0;
+let fotoPinchZoomInicio = 1;
+let fotoTapAnt = null;
+
+function fotoAplicar() {
+  fotoImg.style.transform = `translate(${fotoZoom.panX}px, ${fotoZoom.panY}px) scale(${fotoZoom.valor})`;
+  fotoNivel.textContent = Math.round(fotoZoom.valor * 100) + '%';
+}
+
+function fotoZoomEn(factor) {
+  fotoZoom.valor = Math.min(8, Math.max(1, fotoZoom.valor * factor));
+  fotoAplicar();
+}
+
+function abrirFoto(src, alt) {
+  fotoZoom.valor = 1;
+  fotoZoom.panX = 0;
+  fotoZoom.panY = 0;
+  fotoPunt = new Map();
+  fotoPinchInicio = 0;
+  fotoTapAnt = null;
+  fotoImg.src = src;
+  fotoImg.alt = alt || '';
+  fotoAplicar();
+  fotoOverlay.hidden = false;
+}
+
+function cerrarFoto() {
+  fotoOverlay.hidden = true;
+  fotoImg.src = '';
+}
+
+function fotoDist(p1, p2) {
+  return Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+}
+
+fotoViewport.addEventListener('pointerdown', (e) => {
+  fotoViewport.setPointerCapture(e.pointerId);
+  if (e.pointerType === 'touch' && !fotoPunt.size) {
+    const ahora = Date.now();
+    if (
+      fotoTapAnt &&
+      ahora - fotoTapAnt.t < 300 &&
+      Math.hypot(e.clientX - fotoTapAnt.x, e.clientY - fotoTapAnt.y) < 40
+    ) {
+      fotoZoomEn(fotoZoom.valor > 1.5 ? 1 / 2.5 : 2.5);
+      fotoTapAnt = null;
+    } else {
+      fotoTapAnt = { t: ahora, x: e.clientX, y: e.clientY };
+    }
+  }
+  fotoPunt.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (fotoPunt.size === 2) {
+    const p = [...fotoPunt.values()];
+    fotoPinchInicio = fotoDist(p[0], p[1]);
+    fotoPinchZoomInicio = fotoZoom.valor;
+  }
+});
+
+fotoViewport.addEventListener('pointermove', (e) => {
+  if (!fotoPunt.has(e.pointerId)) return;
+  const prev = fotoPunt.get(e.pointerId);
+  const dx = e.clientX - prev.x;
+  const dy = e.clientY - prev.y;
+  fotoPunt.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (fotoPunt.size === 2) {
+    const p = [...fotoPunt.values()];
+    const d = fotoDist(p[0], p[1]);
+    if (fotoPinchInicio > 0) {
+      const nuevo = fotoPinchZoomInicio * (d / fotoPinchInicio);
+      fotoZoom.valor = Math.min(8, Math.max(1, nuevo));
+      fotoAplicar();
+    }
+  } else if (fotoZoom.valor > 1) {
+    fotoZoom.panX += dx;
+    fotoZoom.panY += dy;
+    fotoAplicar();
+  }
+});
+
+function fotoFinPunto(e) {
+  fotoPunt.delete(e.pointerId);
+  if (fotoPunt.size < 2) {
+    fotoPinchInicio = 0;
+  }
+}
+fotoViewport.addEventListener('pointerup', fotoFinPunto);
+fotoViewport.addEventListener('pointercancel', fotoFinPunto);
+
+fotoMas.addEventListener('click', () => fotoZoomEn(1.3));
+fotoMenos.addEventListener('click', () => fotoZoomEn(1 / 1.3));
+
+fotoOverlay.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  fotoZoomEn(e.deltaY < 0 ? 1.15 : 1 / 1.15);
+}, { passive: false });
+
+fotoOverlay.addEventListener('click', (e) => {
+  if (e.target.closest('[data-cerrar-foto]')) cerrarFoto();
+});
+
+fotoOverlay.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') cerrarFoto();
+});
 
 (async () => {
   try {

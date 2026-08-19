@@ -1,5 +1,5 @@
 {
-  "version": "1.0.5",
+  "version": "1.0.6",
   "apk": "/velvet-store.apk",
-  "nota": "V 1.0.5: boton X para quitar productos del carrito y correccion de cierre de pedidos"
+  "nota": "V 1.0.6: ver foto de zapatilla en grande con zoom (pellizco, + y -) y cerrar con X"
 }

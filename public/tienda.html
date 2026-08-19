@@ -61,6 +61,20 @@
     </div>
   </section>
 
+  <section id="tienda-foto" class="foto-overlay" hidden>
+    <div class="foto-viewport" id="foto-viewport">
+      <img id="foto-img" alt="" draggable="false" />
+    </div>
+    <div class="foto-toolbar">
+      <div class="foto-zoom-btns">
+        <button type="button" id="foto-menos" aria-label="Alejar">−</button>
+        <span id="foto-nivel" class="foto-nivel">100%</span>
+        <button type="button" id="foto-mas" aria-label="Acercar">+</button>
+      </div>
+      <button type="button" class="foto-cerrar" data-cerrar-foto aria-label="Cerrar">×</button>
+    </div>
+  </section>
+
   <script src="/tienda.js"></script>
 </body>
 </html>
