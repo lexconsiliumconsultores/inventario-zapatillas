@@ -12,6 +12,17 @@
   <link rel="stylesheet" href="/estilos.css" />
 </head>
 <body>
+  <div id="login-overlay" class="login-overlay" hidden>
+    <form class="login-caja" id="login-form">
+      <img class="logo login-logo" src="/logo-velvet.png" alt="Velvet Store" />
+      <h2>Velvet Store</h2>
+      <p>Ingresa la contraseña para administrar el inventario.</p>
+      <input id="login-pass" type="password" placeholder="Contraseña" autocomplete="current-password" required />
+      <button type="submit" class="btn-primario" id="login-btn">Entrar</button>
+      <div id="login-error" class="login-error" hidden></div>
+    </form>
+  </div>
+
   <header>
     <div class="marca">
       <img class="logo" src="/logo-velvet.png" alt="Velvet Store" />

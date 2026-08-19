@@ -1,9 +1,13 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { cargarDesdeExcel, buscarArchivoExcel } = require('./excel');
 
 const PORT = process.env.PORT || 3000;
+
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+const sesiones = new Map();
 
 const DATA_DIR_PEDIDO = process.env.DATA_DIR || __dirname;
 let DATA_DIR = DATA_DIR_PEDIDO;
@@ -254,6 +258,37 @@ function enviar(res, codigo, datos) {
   res.end(JSON.stringify(datos));
 }
 
+function cookieDe(req, nombre) {
+  const partes = (req.headers.cookie || '').split(';');
+  for (const p of partes) {
+    const [k, v] = p.trim().split('=');
+    if (k === nombre) return decodeURIComponent(v || '');
+  }
+  return '';
+}
+
+function estaAutenticado(req) {
+  const tok = cookieDe(req, 'velvet_admin');
+  if (!tok) return false;
+  const expira = sesiones.get(tok);
+  if (!expira) return false;
+  if (Date.now() > expira) {
+    sesiones.delete(tok);
+    return false;
+  }
+  return true;
+}
+
+function rutaAdminProtegida(req, url) {
+  const p = url.pathname;
+  if (!p.startsWith('/api/')) return false;
+  if (p === '/api/system') return false;
+  if (p === '/api/login' || p === '/api/logout') return false;
+  if (p.startsWith('/api/tienda/')) return false;
+  if (p === '/api/pedidos' && req.method === 'POST') return false;
+  return true;
+}
+
 function servirArchivo(res, ruta, tipo) {
   fs.readFile(ruta, (err, contenido) => {
     if (err) {
@@ -292,6 +327,34 @@ function migrarFotos() {
 function crearServidor() {
   return http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
+
+  if (rutaAdminProtegida(req, url) && !estaAutenticado(req)) {
+    return enviar(res, 401, { error: 'No autorizado' });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/login') {
+    if (!ADMIN_PASSWORD) return enviar(res, 503, { error: 'La proteccion no esta configurada en el servidor' });
+    const cuerpo = await leerCuerpo(req).catch(() => ({}));
+    if (String(cuerpo.password || '') !== ADMIN_PASSWORD) return enviar(res, 401, { error: 'Contraseña incorrecta' });
+    const token = crypto.randomBytes(24).toString('hex');
+    sesiones.set(token, Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const https = req.headers['x-forwarded-proto'] === 'https';
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Set-Cookie': `velvet_admin=${token}; HttpOnly; Path=/; Max-Age=604800; SameSite=Lax${https ? '; Secure' : ''}`,
+    });
+    return res.end(JSON.stringify({ ok: true }));
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/logout') {
+    const tok = cookieDe(req, 'velvet_admin');
+    if (tok) sesiones.delete(tok);
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Set-Cookie': 'velvet_admin=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax',
+    });
+    return res.end(JSON.stringify({ ok: true }));
+  }
 
   if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.html')) {
     return servirArchivo(res, path.join(__dirname, 'public', 'index.html'), 'text/html; charset=utf-8');
