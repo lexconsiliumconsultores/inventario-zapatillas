@@ -6,7 +6,10 @@ const { cargarDesdeExcel, buscarArchivoExcel } = require('./excel');
 
 const PORT = process.env.PORT || 3000;
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
+const ADMIN_LOGIN = (process.env.ADMIN_USERS || 'admin:admin1234').split(',').map((s) => {
+  const [usuario, clave] = s.split(':');
+  return { usuario: String(usuario || '').trim(), clave: String(clave || '').trim() };
+});
 const SESSION_SECRET = process.env.SESSION_SECRET || 'velvet-store-session-secret';
 
 const DATA_DIR_PEDIDO = process.env.DATA_DIR || __dirname;
@@ -346,9 +349,12 @@ function crearServidor() {
   }
 
   if (req.method === 'POST' && url.pathname === '/api/login') {
-    if (!ADMIN_PASSWORD) return enviar(res, 503, { error: 'La proteccion no esta configurada en el servidor' });
+    if (!ADMIN_LOGIN.length) return enviar(res, 503, { error: 'La proteccion no esta configurada en el servidor' });
     const cuerpo = await leerCuerpo(req).catch(() => ({}));
-    if (String(cuerpo.password || '') !== ADMIN_PASSWORD) return enviar(res, 401, { error: 'Contraseña incorrecta' });
+    const valido = ADMIN_LOGIN.some(
+      (u) => u.usuario === String(cuerpo.usuario || '') && u.clave === String(cuerpo.password || '')
+    );
+    if (!valido) return enviar(res, 401, { error: 'Usuario o contraseña incorrectos' });
     const token = firmarCookie({ exp: Date.now() + 7 * 24 * 60 * 60 * 1000 });
     const https = req.headers['x-forwarded-proto'] === 'https';
     res.writeHead(200, {
