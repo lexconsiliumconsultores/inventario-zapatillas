@@ -30,6 +30,7 @@ const APP_VERSION = '1.0.6';
 
 const loginOverlay = document.getElementById('login-overlay');
 const loginForm = document.getElementById('login-form');
+const loginUser = document.getElementById('login-user');
 const loginPass = document.getElementById('login-pass');
 const loginError = document.getElementById('login-error');
 
@@ -59,7 +60,7 @@ if (loginForm) {
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: loginPass.value }),
+        body: JSON.stringify({ usuario: loginUser ? loginUser.value : '', password: loginPass.value }),
       });
       const data = await res.json();
       if (res.status === 200) {
