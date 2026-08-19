@@ -213,6 +213,13 @@ pedidosLista.addEventListener('click', async (e) => {
 
 btnPedidos.addEventListener('click', verPedidos);
 
+document.getElementById('btn-salir').addEventListener('click', async () => {
+  try {
+    await fetch('/api/logout', { method: 'POST' });
+  } catch (e) {}
+  location.reload();
+});
+
 async function cargar() {
   const params = new URLSearchParams();
   if (temporada) params.set('temporada', temporada);
