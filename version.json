@@ -1,5 +1,5 @@
 {
-  "version": "1.0.7",
+  "version": "1.0.8",
   "apk": "/velvet-store.apk",
-  "nota": "V 1.0.7: panel admin protegido con usuario y contraseña + foto de zapatilla con zoom en la tienda"
+  "nota": "V 1.0.8 final: icono nuevo de la app con el logo Velvet + splash"
 }

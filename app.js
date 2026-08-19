@@ -26,7 +26,7 @@ let itemBaja = null;
 let fotoPendiente = null;
 let quitarFoto = false;
 
-const APP_VERSION = '1.0.7';
+const APP_VERSION = '1.0.8';
 
 const loginOverlay = document.getElementById('login-overlay');
 const loginForm = document.getElementById('login-form');
