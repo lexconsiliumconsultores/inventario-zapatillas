@@ -716,6 +716,66 @@ tbody tr:hover {
   color: #15803d;
 }
 
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.login-overlay[hidden] {
+  display: none;
+}
+
+.login-caja {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 22px;
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.login-logo {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+  border-radius: 14px;
+}
+
+.login-caja h2 {
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.login-caja p {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.login-caja input {
+  padding: 12px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.login-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 10px;
+}
+
 @media (max-width: 800px) {
   main {
     padding: 12px;

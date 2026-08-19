@@ -28,6 +28,52 @@ let quitarFoto = false;
 
 const APP_VERSION = '1.0.6';
 
+const loginOverlay = document.getElementById('login-overlay');
+const loginForm = document.getElementById('login-form');
+const loginPass = document.getElementById('login-pass');
+const loginError = document.getElementById('login-error');
+
+async function comprobarLogin() {
+  try {
+    const res = await fetch('/api/inventario?t=' + Date.now());
+    if (res.status === 401) {
+      if (loginOverlay) loginOverlay.hidden = false;
+      return false;
+    }
+    return true;
+  } catch (e) {
+    return true;
+  }
+}
+
+if (loginForm) {
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = loginForm.querySelector('button');
+    btn.disabled = true;
+    loginError.hidden = true;
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: loginPass.value }),
+      });
+      const data = await res.json();
+      if (res.status === 200) {
+        location.reload();
+        return;
+      }
+      loginError.textContent = data.error || 'Contraseña incorrecta';
+      loginError.hidden = false;
+    } catch (err) {
+      loginError.textContent = 'No se pudo conectar. Revisa tu conexión.';
+      loginError.hidden = false;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+}
+
 document.getElementById('app-version').textContent = 'V' + APP_VERSION;
 
 (async () => {
@@ -632,6 +678,7 @@ document.getElementById('archivo-excel').addEventListener('change', async (e) =>
 cargar();
 cargarSistema();
 cargarPedidosPendientes();
+comprobarLogin();
 
 const refrescar = document.getElementById('refrescar');
 const refrescarTexto = document.getElementById('refrescar-texto');
