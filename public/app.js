@@ -35,6 +35,9 @@ const loginError = document.getElementById('login-error');
 
 async function comprobarLogin() {
   try {
+    await fetch('/api/logout', { method: 'POST' });
+  } catch (e) {}
+  try {
     const res = await fetch('/api/inventario?t=' + Date.now());
     if (res.status === 401) {
       if (loginOverlay) loginOverlay.hidden = false;
@@ -60,7 +63,10 @@ if (loginForm) {
       });
       const data = await res.json();
       if (res.status === 200) {
-        location.reload();
+        if (loginOverlay) loginOverlay.hidden = true;
+        cargar();
+        cargarSistema();
+        cargarPedidosPendientes();
         return;
       }
       loginError.textContent = data.error || 'Contraseña incorrecta';
@@ -682,10 +688,13 @@ document.getElementById('archivo-excel').addEventListener('change', async (e) =>
   lector.readAsDataURL(archivo);
 });
 
-cargar();
-cargarSistema();
-cargarPedidosPendientes();
-comprobarLogin();
+comprobarLogin().then((ok) => {
+  if (ok) {
+    cargar();
+    cargarSistema();
+    cargarPedidosPendientes();
+  }
+});
 
 const refrescar = document.getElementById('refrescar');
 const refrescarTexto = document.getElementById('refrescar-texto');
