@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Velvet Store Tienda</string>
+    <string name="title_activity_main">Velvet Store Tienda</string>
+    <string name="package_name">com.velvetstore.tienda</string>
+    <string name="custom_url_scheme">com.velvetstore.tienda</string>
+</resources>

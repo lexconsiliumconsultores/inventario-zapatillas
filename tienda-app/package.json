@@ -1,0 +1,10 @@
+{
+  "name": "velvet-store-tienda",
+  "version": "1.0.0",
+  "description": "App Android de la tienda Velvet Store",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "android:build": "cd android && gradlew.bat assembleRelease"
+  }
+}

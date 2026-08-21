@@ -1,0 +1,14 @@
+{
+  "appId": "com.velvetstore.tienda",
+  "appName": "Velvet Store Tienda",
+  "webDir": "../public",
+  "server": {
+    "url": "https://velvet-store-smec-production.up.railway.app",
+    "androidScheme": "https",
+    "cleartext": true,
+    "appStartPath": "/tienda"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

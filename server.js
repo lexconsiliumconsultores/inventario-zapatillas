@@ -407,6 +407,12 @@ function crearServidor() {
     return servirArchivo(res, rutaApk, 'application/vnd.android.package-archive');
   }
 
+  if (req.method === 'GET' && url.pathname === '/velvet-store-tienda.apk') {
+    const rutaApk = path.join(__dirname, 'velvet-store-tienda-descarga.apk');
+    if (!fs.existsSync(rutaApk)) return enviar(res, 404, { error: 'APK no disponible' });
+    return servirArchivo(res, rutaApk, 'application/vnd.android.package-archive');
+  }
+
   if (req.method === 'GET' && url.pathname.startsWith('/uploads/')) {
     const archivo = path.join(UPLOAD_DIR, path.basename(url.pathname));
     const mime = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp' };

@@ -341,3 +341,18 @@ fotoOverlay.addEventListener('keydown', (e) => {
   pintarTabs();
   cargar();
 })();
+
+const avisoApp = document.getElementById('aviso-app');
+const AVISO_APP_KEY = 'tienda-aviso-app-v1';
+if (avisoApp && !window.Capacitor && !localStorage.getItem(AVISO_APP_KEY)) {
+  avisoApp.hidden = false;
+}
+const avisoAppCerrar = document.getElementById('aviso-app-cerrar');
+if (avisoAppCerrar) {
+  avisoAppCerrar.addEventListener('click', () => {
+    avisoApp.hidden = true;
+    try {
+      localStorage.setItem(AVISO_APP_KEY, '1');
+    } catch (e) {}
+  });
+}

@@ -10,3 +10,5 @@ android/app/build/
 android/build/
 android/local.properties
 android/app/src/main/assets/public/
+tienda-app/android/keystore.properties
+tienda-app/android/velvet-store.keystore

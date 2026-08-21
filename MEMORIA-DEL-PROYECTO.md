@@ -114,6 +114,47 @@ Archivos de versión:
 - Push a `master` dispara el deploy automático en Railway.
 - El pomp de datos entre la web y la app usa la misma URL de producción (Capacitor).
 
+## 7. App Android de la TIENDA (19/08) — COMPLETADO, ver sección 8
+
+**Objetivo:** crear una APK aparte, SOLO para clientes (la tienda), separada de la app de administración.
+La tienda web (`/tienda`) funciona perfecta en el navegador; falta empaquetarla como app.
+
+**Plan acordado (hacerlo mañana):**
+
+1. Crear carpeta nueva `tienda-app/` en la raíz con su propio `capacitor.config.json`:
+   - `appId`: `com.velvetstore.tienda`
+   - `appName`: `Velvet Store Tienda`
+   - `webDir`: `../public`
+   - `server.url`: `https://velvet-store-smec-production.up.railway.app`
+   - `server.startPath`: `/tienda` (así la app abre la tienda y no el panel admin)
+   - `androidScheme: https`, `cleartext: true`, `allowMixedContent: true`
+2. Ejecutar `npx cap add android` dentro de `tienda-app/` (usar `@capacitor/cli` del root).
+3. Copiar de `android/` → `tienda-app/android/`:
+   - `velvet-store.keystore` + `keystore.properties`
+   - Firma release en `app/build.gradle` (igual que el admin)
+   - Íconos/splash (`res/` mipmaps, splash) — mismo logo Velvet
+4. Compilar con Java 21:
+   `$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot"; cd tienda-app/android; .\gradlew.bat assembleRelease`
+5. Entregar APK (ej. `Velvet Store Tienda 1.0.0.apk`).
+
+**Notas:**
+- La app de tienda NO necesita el plugin `AppUpdater` (solo existe en la app de admin).
+- No confundir con la app actual: `android/` = admin (`com.velvetstore.inventario`), `tienda-app/android/` = tienda (`com.velvetstore.tienda`).
+- Firma con el MISMO keystore `velvet-store.keystore` para mantener el certificado `CN=Velvet Store`.
+
+**Ya hecho (19/08):** se quitó el `<link rel="manifest">` de `tienda.html` para que la página web de la tienda ya no ofrezca instalar la app de admin (commit `b0257be`, desplegado en Railway).
+
+## 8. App de la TIENDA publicada (20/08)
+
+- APK de la tienda generada y subida al repo: `Velvet Store Tienda 1.0.0.apk` (v1.0.0, `com.velvetstore.tienda`, firmada con `velvet-store.keystore`).
+- Copia servida en producción: `velvet-store-tienda-descarga.apk`, disponible en la URL **`/velvet-store-tienda.apk`** (ruta nueva en `server.js`, igual que `/velvet-store.apk` del admin).
+- Código fuente del proyecto Android subido en `tienda-app/` (keystore y builds excluidos por `.gitignore`).
+- **Aviso opcional de descarga** en la página web de la tienda (`/tienda`):
+  - Barra fija abajo con logo, texto "¡Ya disponible nuestra app!" y botón **Descargar** que apunta a `/velvet-store-tienda.apk`.
+  - Botón × para cerrar; al cerrarlo se guarda en `localStorage` (`tienda-aviso-app-v1`) y no vuelve a molestar.
+  - No aparece dentro de la app nativa (se detecta `window.Capacitor`) ni para quien ya lo cerró.
+  - Para volver a mostrarlo a todos en el futuro: cambiar la clave a `tienda-aviso-app-v2` en `tienda.html`/`tienda.js`.
+
 ---
 
 *Documento de cierre — Velvet Store. ¡Proyecto terminado!*
