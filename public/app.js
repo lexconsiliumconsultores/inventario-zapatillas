@@ -95,7 +95,7 @@ document.getElementById('app-version').textContent = 'V' + APP_VERSION;
         instalada = '';
       }
     }
-    const res = await fetch('/version.json?t=' + Date.now());
+    const res = await fetch('version.json?t=' + Date.now());
     if (!res.ok) return;
     const meta = await res.json();
     if (meta.version && meta.version !== instalada) {
@@ -113,7 +113,7 @@ document.getElementById('app-version').textContent = 'V' + APP_VERSION;
             boton.textContent = 'Descargando...';
             try {
               const AppUpdater = Capacitor.Plugins.AppUpdater;
-              await AppUpdater.instalar({ url: new URL(meta.apk, location.origin).href });
+              await AppUpdater.instalar({ url: new URL(meta.apk, location.href).href });
               boton.textContent = 'Instalando...';
             } catch (e) {
               boton.textContent = 'Actualizar ahora';

@@ -6,15 +6,15 @@
   <title>Velvet Store - Inventario</title>
   <meta name="description" content="Inventario Velvet Store: stock, tallas, ventas y fotos." />
   <meta name="theme-color" content="#0f172a" />
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" href="/logo-velvet-192.png" type="image/png" />
-  <link rel="apple-touch-icon" href="/logo-velvet-192.png" />
-  <link rel="stylesheet" href="/estilos.css" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="logo-velvet-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="logo-velvet-192.png" />
+  <link rel="stylesheet" href="estilos.css" />
 </head>
 <body>
   <div id="login-overlay" class="login-overlay" hidden>
     <form class="login-caja" id="login-form">
-      <img class="logo login-logo" src="/logo-velvet.png" alt="Velvet Store" />
+      <img class="logo login-logo" src="logo-velvet.png" alt="Velvet Store" />
       <h2>Velvet Store</h2>
       <p>Ingresa tus credenciales para administrar el inventario.</p>
       <input id="login-user" type="text" placeholder="Usuario" autocomplete="username" required />
@@ -26,7 +26,7 @@
 
   <header>
     <div class="marca">
-      <img class="logo" src="/logo-velvet.png" alt="Velvet Store" />
+      <img class="logo" src="logo-velvet.png" alt="Velvet Store" />
       <div>
         <h1>Velvet Store <span class="version" id="app-version"></span></h1>
         <span class="subtitulo">Elegancia en cada paso</span>
@@ -224,12 +224,12 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="/supabase-config.js"></script>
-  <script src="/api-shim.js"></script>
-  <script src="/app.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="api-shim.js"></script>
+  <script src="app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
+      navigator.serviceWorker.register('sw.js').catch(() => {});
     }
   </script>
 </body>
