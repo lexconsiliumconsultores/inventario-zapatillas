@@ -1,13 +1,18 @@
 const CACHE = 'inventario-v5';
 const ESTATICOS = [
-  '/',
-  '/index.html',
-  '/estilos.css',
-  '/app.js',
-  '/manifest.json',
-  '/logo-velvet-192.png',
-  '/logo-velvet.png',
-  '/logo-maskable-512.png',
+  'index.html',
+  'estilos.css',
+  'app.js',
+  'manifest.json',
+  'sw.js',
+  'supabase-config.js',
+  'api-shim.js',
+  'tienda.html',
+  'tienda.css',
+  'tienda.js',
+  'logo-velvet-192.png',
+  'logo-velvet.png',
+  'logo-maskable-512.png',
 ];
 
 self.addEventListener('install', (e) => {
