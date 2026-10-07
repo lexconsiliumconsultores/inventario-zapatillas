@@ -1,4 +1,4 @@
-const CACHE = 'inventario-v5';
+const CACHE = 'inventario-v6';
 const ESTATICOS = [
   'index.html',
   'estilos.css',
