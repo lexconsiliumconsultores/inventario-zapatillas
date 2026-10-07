@@ -7,6 +7,7 @@
   const jsonResponse = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
 
   const fetchOriginal = window.fetch;
+  let logueado = false;
   window.fetch = async function (url, init) {
     const pathname = typeof url === 'string' ? url.split('?')[0] : url.url.split('?')[0];
     try {
@@ -23,12 +24,22 @@
     const method = ((init && init.method) || 'GET').toUpperCase();
     const body = init && init.body ? JSON.parse(init.body) : null;
 
-    // Plugin de login
+    // Plugin de login (sesion en memoria: pide clave en cada carga de pagina)
     if (method === 'POST' && pathname === '/api/login') {
-      const expected = (window.ADMIN_USERS || {})[body.usuario] || 'dani1234';
-      return jsonResponse(body.clave === (window.ADMIN_USERS || {})[body.usuario] ? { ok: true } : { ok: false, error: 'Credenciales invalidas' }, 200);
+      const valido = (window.ADMIN_USERS || {})[body.usuario] === body.password && Boolean(body.password);
+      if (!valido) return jsonResponse({ error: 'Usuario o contrase\u00f1a incorrectos' }, 401);
+      logueado = true;
+      return jsonResponse({ ok: true }, 200);
     }
-    if (method === 'POST' && pathname === '/api/logout') return jsonResponse({ ok: true }, 200);
+    if (method === 'POST' && pathname === '/api/logout') { logueado = false; return jsonResponse({ ok: true }, 200); }
+
+    const protegida =
+      pathname !== '/api/system' &&
+      pathname !== '/api/login' &&
+      pathname !== '/api/logout' &&
+      !pathname.startsWith('/api/tienda/') &&
+      !(pathname === '/api/pedidos' && method === 'POST');
+    if (protegida && !logueado) return jsonResponse({ error: 'No autorizado' }, 401);
 
     // Config GitHub (admin)
     if (pathname === '/api/conexion') return jsonResponse({ repo: '', token: '' }, 200);
