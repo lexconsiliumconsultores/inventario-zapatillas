@@ -1,4 +1,4 @@
-const CACHE = 'inventario-v3';
+const CACHE = 'inventario-v5';
 const ESTATICOS = [
   '/',
   '/index.html',
