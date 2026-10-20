@@ -186,4 +186,43 @@ Para usuarios/roles reales, mover a Supabase Auth.
 
 ---
 
+## 10. Sesión de cierre (20-10-2026, tarde)
+
+Trabajo realizado sobre la migración ya completada:
+
+**APKs y publicación**
+- APK admin **1.0.9** (versionCode 10) y tienda **1.0.1** (versionCode 2) compiladas con Java 21.
+- APKs copiadas a `public/` y a la raíz (`Velvet Store 1.0.9.apk`, `Velvet Store Tienda 1.0.1.apk`,
+  `velvet-store-descarga.apk`, `velvet-store-tienda-descarga.apk`).
+- `public/` sincronizado a `origin/gh-pages` (commit `5800baa`); verificado que GitHub Pages
+  sirve `version.json` 1.0.9 y ambas APKs.
+- Commit + push a `master` (`5e0ec17`).
+
+**Instalación en el celular**
+- Admin 1.0.9 instalada por USB (adb).
+- Tienda 1.0.1: MIUI bloqueó `adb install` (`INSTALL_FAILED_USER_RESTRICTED`); se copió a
+  `/sdcard/Download/Velvet-Store-Tienda-1.0.1.apk` para instalarla desde el gestor de archivos.
+
+**Limpieza de Railway**
+- Eliminados `railway.json.bak`, `render.yaml.bak` y `inventario-backup-railway.json`.
+- `server.js`: quitado el bloque que cargaba desde ese backup.
+- Docs (`README.md`, `MEMORIA`, `MIGRACION-SUPABASE`, `ESTADO`): limpiadas las menciones a Railway.
+- Commit `ea9b923`.
+
+**Restauración del backup de datos**
+- Recuperado el backup de inventario como `inventario-backup.json` y reactivada su carga en
+  `server.js`. Commit `972f012`.
+
+**Corrección de codificación (mojibake)**
+- Causa: `inventario.json` tenía `├▒` (= `ñ`) y `├®` (= `é`) y se migró así a Supabase.
+- Corregidas 11 filas en Supabase (24–35): `Niños`, `Niña`, `Niño` y `café`.
+- Corregido `inventario.json` local.
+
+**Pendiente**
+- Renombrar la cuenta de GitHub `lexconsiliumconsultores` -> `velvet-store` para que la URL
+  quede `https://velvet-store.github.io/inventario-zapatillas/`. El usuario lo hará desde
+  `https://github.com/settings/admin`. Después actualizar las URLs en los docs.
+
+---
+
 *Documento de cierre — Velvet Store. ¡Proyecto terminado!*
