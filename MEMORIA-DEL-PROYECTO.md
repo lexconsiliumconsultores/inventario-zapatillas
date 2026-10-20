@@ -14,9 +14,13 @@ Historial completo de todo lo realizado desde el inicio del proyecto hasta el ci
 Además se desarrolló una **aplicación Android** (APK) que abre la tienda/inventario directamente, compilada y firmada con Ceramic Capacitor.
 
 - Repositorio: `https://github.com/lexconsiliumconsultores/inventario-zapatillas.git` (rama `master`)
-- Servidor: Railway — proyecto `compassionate-inspiration`, servicio `velvet-store`, entorno `production`
-- URL: `https://velvet-store-smec-production.up.railway.app`
-- Base de datos / archivos: volumen en Railway `/data` (500 MB)
+- **Arquitectura actual (desde 20-10-2026):** sin servidor propio. Datos en **Supabase** y
+  web/app servida como estaticos desde **GitHub Pages** (rama `gh-pages`).
+  - Supabase: `https://sltgejpimquvaxzyupjo.supabase.co` (tablas `inventario`, `pedidos`).
+  - Web: `https://lexconsiliumconsultores.github.io/inventario-zapatillas/`.
+  - **Railway retirado:** proyecto `compassionate-inspiration` eliminado (ya no se usa).
+- (Historico) Servidor: Railway — proyecto `compassionate-inspiration`, servicio `velvet-store`,
+  entorno `production`, URL `https://velvet-store-smec-production.up.railway.app`, volumen `/data` (500 MB).
 
 ---
 
@@ -81,7 +85,8 @@ Además se desarrolló una **aplicación Android** (APK) que abre la tienda/inve
 |---|---|
 | 1.0.6 | Foto de zapatilla con zoom en la tienda |
 | 1.0.7 | Cierre de funcionalidades: panel admin con usuarios (dani y manu), login en cada carga, botón Salir, APK firmada |
-| 1.0.8 (final) | Ícono nuevo con el logo Velvet + splash; APK 1.0.8 versionCode 9 |
+| 1.0.8 | Ícono nuevo con el logo Velvet + splash; APK 1.0.8 versionCode 9 |
+| 1.0.9 (admin) / 1.0.1 (tienda) | Migración a Supabase directo, sin servidor (GitHub Pages); APKs admin versionCode 10 y tienda versionCode 2 |
 
 Archivos de versión:
 - `public/version.json` → muestra la versión en la app y la ruta de la APK.
@@ -92,11 +97,14 @@ Archivos de versión:
 
 ## 4. Estado final (cierre)
 
-- Última versión en producción: **1.0.8**
-- `version.json` online: `1.0.8` — *"V 1.0.8 final: icono nuevo de la app con el logo Velvet + splash"*
-- APK servida en `/velvet-store.apk`: **1.0.8** (versionCode 9), firmada, verificada en producción (se comprobó el hash).
-- Despliegues Railway con estado **SUCCESS** en todas las versiones.
-- Árbol de trabajo de git limpio.
+- Última versión en producción: **admin 1.0.9** / **tienda 1.0.1**
+- `version.json` online: `1.0.9` — *"V 1.0.9: migracion a Supabase, sin servidor (datos en la nube)"*
+- APK admin servida en `/velvet-store.apk`: **1.0.9** (versionCode 10), firmada, verificada en producción.
+- APK tienda servida en `/velvet-store-tienda.apk`: **1.0.1** (versionCode 2), firmada, verificada en producción.
+- Datos verificados en Supabase: 35 productos, 3 con foto (Z-01, Z-03, 3J01-1).
+- Railway **eliminado** (proyecto `compassionate-inspiration`, sin servicios activos).
+- Web servida por GitHub Pages (rama `gh-pages`), sincronizada con `public/`.
+- Árbol de trabajo de git: ver apartado de commit.
 
 ## 5. Variables de entorno (Railway, entorno `production`)
 - `ADMIN_USERS` = `dani:dani1234,manu:manu1234`
@@ -154,6 +162,29 @@ La tienda web (`/tienda`) funciona perfecta en el navegador; falta empaquetarla 
   - Botón × para cerrar; al cerrarlo se guarda en `localStorage` (`tienda-aviso-app-v1`) y no vuelve a molestar.
   - No aparece dentro de la app nativa (se detecta `window.Capacitor`) ni para quien ya lo cerró.
   - Para volver a mostrarlo a todos en el futuro: cambiar la clave a `tienda-aviso-app-v2` en `tienda.html`/`tienda.js`.
+
+---
+
+## 9. Migración a Supabase directo (20-10-2026) — COMPLETADA
+
+**Objetivo:** eliminar la dependencia del servidor propio (Railway) y dejar los datos en
+Supabase, sirviendo la web/app como estáticos.
+
+**Qué se hizo:**
+- `public/supabase-config.js` apunta al proyecto real `sltgejpimquvaxzyupjo`.
+- `public/api-shim.js` traduce las llamadas `/api/*` a Supabase (PostgREST) en el navegador/app.
+- Tablas `inventario` (35 productos con tallas) y `pedidos` creadas con RLS `allow_all_*`.
+- Las 3 fotos restantes migradas (Z-01, Z-03, 3J01-1).
+- `capacitor.config.json` de ambas apps sin `server.url`: la APK empaqueta `public/`.
+- Hosting en GitHub Pages (rama `gh-pages`), sincronizada con `public/`.
+- APKs recompiladas con Java 21: admin **1.0.9** (versionCode 10), tienda **1.0.1** (versionCode 2).
+- Railway eliminado (proyecto `compassionate-inspiration`).
+
+**Verificación end-to-end:** Supabase responde 35 filas (3 con foto); GitHub Pages sirve
+`version.json` 1.0.9 y ambas APKs.
+
+**Login admin (shim, en memoria):** `dani` / `dani1234`, `manu` / `manu1234`.
+Para usuarios/roles reales, mover a Supabase Auth.
 
 ---
 

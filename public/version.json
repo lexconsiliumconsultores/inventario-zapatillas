@@ -1,5 +1,5 @@
 {
-  "version": "1.0.8",
+  "version": "1.0.9",
   "apk": "velvet-store.apk",
-  "nota": "V 1.0.8 final: icono nuevo de la app con el logo Velvet + splash"
+  "nota": "V 1.0.9: migracion a Supabase, sin servidor (datos en la nube)"
 }
