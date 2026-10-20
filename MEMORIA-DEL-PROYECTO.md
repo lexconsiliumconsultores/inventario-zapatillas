@@ -18,9 +18,7 @@ Además se desarrolló una **aplicación Android** (APK) que abre la tienda/inve
   web/app servida como estaticos desde **GitHub Pages** (rama `gh-pages`).
   - Supabase: `https://sltgejpimquvaxzyupjo.supabase.co` (tablas `inventario`, `pedidos`).
   - Web: `https://lexconsiliumconsultores.github.io/inventario-zapatillas/`.
-  - **Railway retirado:** proyecto `compassionate-inspiration` eliminado (ya no se usa).
-- (Historico) Servidor: Railway — proyecto `compassionate-inspiration`, servicio `velvet-store`,
-  entorno `production`, URL `https://velvet-store-smec-production.up.railway.app`, volumen `/data` (500 MB).
+- (Historico) Antes del 20-10-2026 usaba un servidor propio (Node + volumen `/data`), ya retirado.
 
 ---
 
@@ -33,7 +31,7 @@ Además se desarrolló una **aplicación Android** (APK) que abre la tienda/inve
 - Panel admin en `public/index.html` + `app.js` + `estilos.css`:
   - Listado de zapatillas, buscador, alta/edición, carga de fotos.
   - Exportación/gestión de Excel (`public/excel.js`).
-- Almacenamiento persistente en el volumen `/data` de Railway.
+- Almacenamiento persistente en el servidor (volumen `/data`).
 
 ### Fase 2 — Tienda pública
 - `tienda.html`, `tienda.js`, `tienda.css`:
@@ -102,24 +100,24 @@ Archivos de versión:
 - APK admin servida en `/velvet-store.apk`: **1.0.9** (versionCode 10), firmada, verificada en producción.
 - APK tienda servida en `/velvet-store-tienda.apk`: **1.0.1** (versionCode 2), firmada, verificada en producción.
 - Datos verificados en Supabase: 35 productos, 3 con foto (Z-01, Z-03, 3J01-1).
-- Railway **eliminado** (proyecto `compassionate-inspiration`, sin servicios activos).
+- Ya no hay servidor propio (arquitectura sin servidor).
 - Web servida por GitHub Pages (rama `gh-pages`), sincronizada con `public/`.
 - Árbol de trabajo de git: ver apartado de commit.
 
-## 5. Variables de entorno (Railway, entorno `production`)
-- `ADMIN_USERS` = `dani:dani1234,manu:manu1234`
-- `ADMIN_PASSWORD` = `admin1234` (legacy, ya no se usa)
-- `SESSION_SECRET` = cadena aleatoria (firma de cookies)
-- `DATA_DIR` = `/data`
-- `NODE_VERSION` = `20`
-- `GH_SYNC_REPO` = `lexconsiliumconsultores/inventario-datos`
-- `GH_SYNC_TOKEN` = token de acceso del repo de datos
+## 5. Configuración Supabase (actual)
+- Proyecto: `sltgejpimquvaxzyupjo` — `https://sltgejpimquvaxzyupjo.supabase.co`
+- Anon key: `sb_publishable_1BEnnP45LUAi6CKrrM8qpQ_NkaydsnP`
+- Tablas: `inventario` (35 productos con tallas) y `pedidos` (RLS `allow_all_*`).
+- Login admin (shim en memoria): `dani` / `dani1234`, `manu` / `manu1234`.
+
+(Histórico, ya sin uso) Variables de entorno del antiguo servidor: `ADMIN_USERS`,
+`SESSION_SECRET`, `DATA_DIR`, `NODE_VERSION`, `GH_SYNC_REPO`, `GH_SYNC_TOKEN`.
 
 ## 6. Recordatorios técnicos
 - Compilar APK: `$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot"; cd android; .\gradlew.bat assembleRelease`
 - Verificar APK: `C:\Users\CASA\AppData\Local\Android\Sdk\build-tools\35.0.0\aapt2.exe dump badging <apk>`
 - Firma APK: certificado `CN=Velvet Store`.
-- Push a `master` dispara el deploy automático en Railway.
+- El deploy es manual: sincronizar `public/` a la rama `gh-pages` (GitHub Pages).
 - El pomp de datos entre la web y la app usa la misma URL de producción (Capacitor).
 
 ## 7. App Android de la TIENDA (19/08) — COMPLETADO, ver sección 8
@@ -133,7 +131,7 @@ La tienda web (`/tienda`) funciona perfecta en el navegador; falta empaquetarla 
    - `appId`: `com.velvetstore.tienda`
    - `appName`: `Velvet Store Tienda`
    - `webDir`: `../public`
-   - `server.url`: `https://velvet-store-smec-production.up.railway.app`
+   - `server.url`: eliminado en la migracion (la APK empaqueta `public/` localmente)
    - `server.startPath`: `/tienda` (así la app abre la tienda y no el panel admin)
    - `androidScheme: https`, `cleartext: true`, `allowMixedContent: true`
 2. Ejecutar `npx cap add android` dentro de `tienda-app/` (usar `@capacitor/cli` del root).
@@ -150,7 +148,7 @@ La tienda web (`/tienda`) funciona perfecta en el navegador; falta empaquetarla 
 - No confundir con la app actual: `android/` = admin (`com.velvetstore.inventario`), `tienda-app/android/` = tienda (`com.velvetstore.tienda`).
 - Firma con el MISMO keystore `velvet-store.keystore` para mantener el certificado `CN=Velvet Store`.
 
-**Ya hecho (19/08):** se quitó el `<link rel="manifest">` de `tienda.html` para que la página web de la tienda ya no ofrezca instalar la app de admin (commit `b0257be`, desplegado en Railway).
+**Ya hecho (19/08):** se quitó el `<link rel="manifest">` de `tienda.html` para que la página web de la tienda ya no ofrezca instalar la app de admin (commit `b0257be`).
 
 ## 8. App de la TIENDA publicada (20/08)
 
@@ -167,7 +165,7 @@ La tienda web (`/tienda`) funciona perfecta en el navegador; falta empaquetarla 
 
 ## 9. Migración a Supabase directo (20-10-2026) — COMPLETADA
 
-**Objetivo:** eliminar la dependencia del servidor propio (Railway) y dejar los datos en
+**Objetivo:** eliminar la dependencia del servidor propio y dejar los datos en
 Supabase, sirviendo la web/app como estáticos.
 
 **Qué se hizo:**
@@ -178,7 +176,7 @@ Supabase, sirviendo la web/app como estáticos.
 - `capacitor.config.json` de ambas apps sin `server.url`: la APK empaqueta `public/`.
 - Hosting en GitHub Pages (rama `gh-pages`), sincronizada con `public/`.
 - APKs recompiladas con Java 21: admin **1.0.9** (versionCode 10), tienda **1.0.1** (versionCode 2).
-- Railway eliminado (proyecto `compassionate-inspiration`).
+- Servidor propio retirado (arquitectura sin servidor).
 
 **Verificación end-to-end:** Supabase responde 35 filas (3 con foto); GitHub Pages sirve
 `version.json` 1.0.9 y ambas APKs.

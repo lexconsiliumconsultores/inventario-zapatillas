@@ -2,7 +2,7 @@
 
 ## Resumen
 Velvet Store ya NO depende de un servidor propio. Los datos viven en Supabase y la
-web/app se sirven como estaticos desde GitHub Pages. Railway fue retirado.
+web/app se sirven como estaticos desde GitHub Pages.
 
 ## Datos clave
 - Proyecto Supabase: `sltgejpimquvaxzyupjo`
@@ -25,13 +25,11 @@ web/app se sirven como estaticos desde GitHub Pages. Railway fue retirado.
 - [x] `supabase/schema.sql`: tablas `inventario` + `pedidos` y politicas RLS.
 - [x] `migrate-inventario.js`: siembra las 35 zapatillas desde `inventario.json` via PostgREST.
 - [x] Las 3 fotos restantes migradas (Z-01, Z-03, 3J01-1) -> `conFoto=3`.
-- [x] `railway.json` y `render.yaml` archivados (ver `/railway.json.bak`).
 - [x] Bump de version: admin `1.0.9` (versionCode 10), tienda `1.0.1` (versionCode 2).
 - [x] APKs recompiladas (Java 21) y publicadas en `public/` y raiz para descarga.
 - [x] `public/` sincronizado a `origin/gh-pages`.
 - [x] Verificacion end-to-end: Supabase 35 filas (3 con foto) y GitHub Pages sirviendo
       `version.json` 1.0.9 + ambas APKs.
-- [x] Railway: proyecto `compassionate-inspiration` eliminado (sin servicios activos).
 
 ## Pasos completados (retomar aqui si algo falla)
 1. Supabase: SQL Editor -> `supabase/schema.sql` (ya ejecutado).
@@ -39,8 +37,7 @@ web/app se sirven como estaticos desde GitHub Pages. Railway fue retirado.
 3. Servir `public/` estatico -> hecho via GitHub Pages (rama `gh-pages`).
 4. APKs: `cd android && gradlew assembleRelease` y
    `cd tienda-app/android && gradlew assembleRelease` (Java 21) -> hecho.
-5. Retirar Railway -> hecho.
-6. Icono y textos: la PWA es offline; regenerar iconos con scripts si se desea.
+5. Icono y textos: la PWA es offline; regenerar iconos con scripts si se desea.
 
 ## Compilar las APKs (recordatorio)
 ```powershell
